@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 
+from menu import Menu
 import sys, os
 import subprocess
-from menu import Menu
 import pickle
-from enum import Enum
 import datetime
 
-class Status(Enum):
-    ACTIVE = 1
-    DROPPED = 2
-    AUDITING = 3
-
-# simple class definitions
 class Course:
-    def __init__(self, name = '', quarter = ''):
+    def __init__(self, name = '', term = ''):
         self.name = name
-        self.quarter = quarter
+        self.term = term
         self.categories = []
         self.gradeables = []
         self.students = []
@@ -37,11 +30,11 @@ class Course:
     def set_cur_category(self, category):
         self.cur_category = category
 
+    # The name of the associated Pickle file for the course
     def file_name(self):
         return self.name.replace(' ','_') + "_" \
-               + self.quarter.replace(' ','_') + ".p"
+               + self.term.replace(' ','_') + ".p"
 
-# todo: consider adding an inactive status field, but keep is_active for simplicity in reporting.
 class Student:
     def __init__(self, first = '', last = '', email = '', is_active=True):
         self.first = first
@@ -55,22 +48,26 @@ class Student:
     def fullname(self):
         return self.first + ' ' + self.last
     
-# I think we don't need to assign an explicit number to questions, their order is just the order in which they were added
 class Question:
     def __init__(self, gradeable, points):
         self.gradeable = gradeable
         self.points = points
 
 # We should have a category for any kind of item that could combine multiple gradeables
-# For example we might need to give a retake option for Midterm 1 so Midterm 1 should be a category
+# For example we might need to give a retake option for 'Midterm 1' so 'Midterm 1' should be a Category
+# as well as a Gradeable.  'Midterm 1 Retake' would also have Category 'Midterm 1'
 class Category:
     def __init__(self, name='', pct_of_grade=0.0):
         self.name = name
         self.pct_of_grade = pct_of_grade
 
-# Total points doesn't include bonus problems.  Added pts and added pct can be applied globally to curve a gradeable
+
+# total_pts doesn't include bonus problems. I.e. the sum of the question points can exceed total_pts.
+# sub_pct is used to handle the retake option above, where we may want to apply a percentage 
+# to (retake score - original score) for each problem.
+# Added pts and added pct can be applied globally to curve a Gradeable
 class Gradeable:
-    def __init__(self, name='', category = None, total_pts=0.0, sub_pct = 0.0, added_pts = 0.0, added_pct = 0.0):
+    def __init__(self, name='', category = None, total_pts=0.0, sub_pct = 100.0, added_pts = 0.0, added_pct = 0.0):
         self.name = name
         self.category = category
         self.total_pts = total_pts
@@ -99,8 +96,6 @@ class Score:
         self.question = question
         self.value = 0.0
 
-# Try to find a score in the scores list that matches the student, gradeable and question number
-# If the question number is ok, but there is no score for that combination, create it and add to scores
 def get_score(student, gradeable, question):
     q = gradeable.get_question(question)
     for s in gb.scores:
@@ -125,15 +120,9 @@ def save_and_exit():
 def save_current():
     save(gb, gb.file_name())
 
-def input_scores(gradeable):
-    gb.set_cur_gradeable(gradeable)
-    return input_score( 0, 0)
 
-def input_student_scores(student):
-    gb.set_cur_student(student)
-    return input_student_score( 0 )
 
-# sets the current gradeable and then opens a menu item
+# These helpers set the current gradeable, student, etc... and then open a menu item
 def set_gradeable_open_score_one_entry(gradeable):
     gb.set_cur_gradeable(gradeable)
     m_score_one_entry.open()
@@ -142,14 +131,17 @@ def set_gradeable_open_gradeable_edit_del(gradeable):
     gb.set_cur_gradeable(gradeable)
     m_gradeable_edit_del.open()
 
-def set_and_open_category(category):
+def set_and_open_category_edit_del(category):
     gb.set_cur_category(category)
     m_category_edit_del.open()
   
 def set_and_open_student(student):
     gb.set_cur_student(student)
     m_student_edit_del.open()
-  
+
+# --------------------------------------
+# User input and type conversion helpers
+# --------------------------------------
 def get_string(title, default=None, prompt=" >> "):
     ftitle = title if default == None else title + " ({0:s})".format(default)
     print(ftitle)
@@ -173,7 +165,6 @@ def get_bool(title, default=None, prompt=" >> "):
 
 def bool_to_yn(flag):
     return "Y" if flag == True else "N"
-
 
 def get_valid_float(title, minval, maxval, default=None, prompt=" >> ") :
     valid = False
@@ -241,8 +232,14 @@ def get_space_separated_floats(title, valid_sum, default=None, prompt=" >> "):
             print("What?")
     return flst
 
+# Give an audible warning
+def say(phrase):
+    #subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
+    subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])
 
-
+#--------------------
+# Category Management
+#--------------------
 def add_category():
     name = get_string("Enter Category Name")
     pct_of_grade = get_valid_float("Percent of Grade", 0, 100)
@@ -262,6 +259,9 @@ def delete_category():
     gb.cur_category = None
     set_category_options()
 
+#-------------------
+# Student Management
+#-------------------
 def import_students():
     with open('students.txt','r') as f:
         text = f.read()
@@ -297,6 +297,9 @@ def delete_student():
     gb.cur_student = None
     set_student_options()
 
+#------------------
+# Course Management
+#------------------
 def add_course():
     first = get_string("Enter Course Name (e.g. Math 251)")
     last = get_string("Enter Quarter (e.g. W18")
@@ -305,10 +308,13 @@ def add_course():
 
 def edit_course():
     name = get_string("Enter Course Name", gb.name)
-    quarter = get_string("Enter Quarter", gb.quarter)
+    term = get_string("Enter Quarter", gb.term)
     gb.name = name
-    gb.quarter = quarter
+    gb.term = term
 
+#---------------------
+# Gradeable Management
+#---------------------
 def add_gradeable():
     name = get_string("Enter Graded Item Name")
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
@@ -350,6 +356,14 @@ def delete_gradeable():
     gb.cur_gradeable = None
     set_gradeable_options()
 
+#------------
+# Score Entry
+#------------
+# Helper for input_score - starts the recursion
+def input_scores(gradeable):
+    gb.set_cur_gradeable(gradeable)
+    return input_score( 0, 0)
+
 # Given indices into the students and questions lists, validate the indices, then if possible
 # Prompt the user for values for the specified student/question
 # Also give the user the option to go back to the previous question or jump to the next or previous student.
@@ -367,6 +381,7 @@ def input_score(st_idx, q_idx):
         s = gb.students[st_idx]
         q = cg.questions[q_idx]
         score = get_score(s, cg, q)
+
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})".format(cg.name, s.name(), q_idx+1, score.value))
         value = input(" >> ")
         if value.lower() == 'q':
@@ -395,6 +410,11 @@ def input_score(st_idx, q_idx):
                 input_score( st_idx, q_idx)
     return
 
+
+# Helper for input_student_score -- starts the recursion
+def input_student_scores(student):
+    gb.set_cur_student(student)
+    return input_student_score( 0 )
 
 # Given an index into the question list, validate the index, then if possible
 # Prompt the user for values for the specified question
@@ -435,46 +455,6 @@ def input_student_score( q_idx):
                 input_student_score( q_idx)
     return
 
-def say(phrase):
-    #subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
-    subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])
-
-# Temporary test data.  Will be replaced by real pickled data.
-def test_data():
-    # Test data
-    gb = Course('Math 251', 'W18')
-
-    joe = Student('Joe', 'Smith')
-    sue = Student('Sue', 'Jones')
-    jeff = Student('Jeff', 'West')
-    gb.students = [joe, sue, jeff]
-
-    
-    att = Category('Class Participation', 5.0)
-    hw = Category('Homework', 5.0)
-    quiz = Category('Quiz', 25.0)
-    mid1 = Category('Midterm 1', 20.0)
-    mid2 = Category('Midterm 2', 20.0)
-    #final = Category('Final', 25.0)
-    gb.categories = [att, hw, quiz, mid1, mid2]
-
-    quiz1 = Gradeable('Quiz 1', quiz, 22)
-    quiz1.add_question(5)
-    quiz1.add_question(5)
-    quiz1.add_question(5)
-    quiz1.add_question(5)
-    gb.gradeables.append(quiz1)
-
-    quiz2 = Gradeable('Quiz 2', quiz, 20)
-    quiz2.add_question(5)
-    quiz2.add_question(5)
-    quiz2.add_question(5)
-    quiz2.add_question(5)
-    gb.gradeables.append(quiz2)
-
-    return gb
-
-
 #------------------------
 # setup category menu logic
 #------------------------
@@ -484,7 +464,7 @@ def set_category_options():
     m_category.add_option("Add Category", add_category)
     for item in gb.categories:
         m_category.add_option("{0:s} ({1:.1f})".format(item.name, item.pct_of_grade), 
-                                    lambda i=item: set_and_open_category(i))
+                                    lambda i=item: set_and_open_category_edit_del(i))
         set_score_all_options()
         set_score_one_options()
         set_gradeable_options()
@@ -591,18 +571,21 @@ def initialize_menus():
     set_student_edit_del_options()
     set_student_import_options()
 
+#-------------
 # Main Program
+#-------------
 if __name__ == "__main__":
+    # Check the command line for a Course file.  
+    # If none is found, start a new course with a default name
     if len(sys.argv) >= 2:
         gb = read(sys.argv[1])
     else:
         today = datetime.date.today()
         m = today.month
-        quarter = "Winter" if m >=11 or m < 2 else \
+        term = "Winter" if m >=11 or m < 2 else \
                   "Spring" if m >= 2 and m < 5 else \
                   "Summer" if m >=5 and m < 8 else "Fall" 
-        gb = Course('New Course', quarter + " " + str(today.year + (1 if quarter == "Winter" else 0)))
-        #gb = test_data()
+        gb = Course('New Course', term + " " + str(today.year + (1 if term == "Winter" else 0)))
 
     m_main = Menu(title = "Gradebook")
     m_course = Menu(title = "Edit Course")

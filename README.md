@@ -1,10 +1,10 @@
 # Gradebook
-## Simple command-line application for quickly setting up a class, recording student scores and viewing reports.
+## Simple command-line application for quickly setting up a course to teach, recording student scores and viewing reports.
 
-At this point the application has only been tested on Linux Mint 17 and 18. It requires Python 3.
-The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Then make this script executable, via ```chmod +x gb1.py``` 
+At this point the application has only been tested on Linux Mint 17 and 18. It requires Python 3.x.
+The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Then make sure the gb1.py script is executable, via ```chmod +x gb1.py``` 
 
-All data for a course is stored in a Pickle file containing a single 'Course' object which is named by a concatenation of the course name and the term.  To open gradebook for a specific saved course named "Math251" in the term "Fall2017" we execute it like this ```$ ./gb1 Math251_Fall2017.p```.  
+All data for a course is stored in a Pickle file containing a single 'Course' object which is named by a concatenation of the course name and the term.  To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this ```$ ./gb1 Math_251_Fall_2018.p```.  
 
 You can create a new course by running the application without specifying a file.  You should see a menu like this:
 
@@ -23,7 +23,7 @@ Gradebook
 
 ```>>>``` 
 
-First change the Course name and term as you like.  Next add your students, either by entering them manually (first name, last name, email) or importing them from a tab-separated text file with no header and columns in that order.
+First select 'Edit Course' to change the Course name and term as you like.  Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file with no header and columns in that order named 'students.txt'.  A sample 'students.txt' is provided in this repository.
 
 The next step is to Manage Categories. A category could be 'Quiz' or 'Midterm', for example, it counts collectively for a specific percent of the grade.  So if you said on the syllabus that 20% of the grade will based on quizzes and the midterm was worth 25%, you would set up these two categories accordingly.
 

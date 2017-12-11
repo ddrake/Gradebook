@@ -38,7 +38,8 @@ class Course:
         self.cur_category = category
 
     def file_name(self):
-        return self.name + "_" + self.quarter + ".p"
+        return self.name.replace(' ','_') + "_" \
+               + self.quarter.replace(' ','_') + ".p"
 
 # todo: consider adding an inactive status field, but keep is_active for simplicity in reporting.
 class Student:
@@ -597,8 +598,10 @@ if __name__ == "__main__":
     else:
         today = datetime.date.today()
         m = today.month
-        quarter = "Wtr" if m >=11 or m < 2 else "Spr" if m >= 2 and m < 5 else "Sum" if m >=5 and m < 8 else "Fal" 
-        gb = Course('New Course', quarter + "_" + str(today.year))
+        quarter = "Winter" if m >=11 or m < 2 else \
+                  "Spring" if m >= 2 and m < 5 else \
+                  "Summer" if m >=5 and m < 8 else "Fall" 
+        gb = Course('New Course', quarter + " " + str(today.year + (1 if quarter == "Winter" else 0)))
         #gb = test_data()
 
     m_main = Menu(title = "Gradebook")

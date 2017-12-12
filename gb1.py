@@ -121,7 +121,6 @@ def save_current():
     save(gb, gb.file_name())
 
 
-
 # These helpers set the current gradeable, student, etc... and then open a menu item
 def set_gradeable_open_score_one_entry(gradeable):
     gb.set_cur_gradeable(gradeable)
@@ -542,6 +541,10 @@ def set_score_one_entry_options():
 def set_reports_options():
     m_reports.options = []
     m_reports.add_option("Return to Gradebook", m_reports.close)
+    m_reports.add_option("Graded Item Reports", m_reports_gradeable
+    m_reports_gradeable = Menu(title = "Reports on Specific Graded Items")
+    m_reports_student = Menu(title = "Reports on Individual Students")
+    m_reports_summary = Menu(title = "Summary Reports")
 
 #------------------------
 # main menu logic
@@ -600,6 +603,9 @@ if __name__ == "__main__":
     m_score_one = Menu(title = "Enter Scores (One Student)")
     m_score_one_entry = Menu(title = "Enter Scores for Student")
     m_reports = Menu(title = "Reports")
-
+    m_reports_gradeable = Menu(title = "Reports on Specific Graded Items")
+    m_reports_student = Menu(title = "Reports on Individual Students")
+    m_reports_summary = Menu(title = "Summary Reports")
     initialize_menus()
     m_main.open()
+

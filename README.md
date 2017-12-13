@@ -4,7 +4,7 @@
 At this point the application has only been tested on Linux Mint 17 and 18. It requires Python 3.x.
 The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Then make sure the gb1.py script is executable, via ```chmod +x gb1.py``` 
 
-All data for a course is stored in a Pickle file containing a single 'Course' object which is named by a concatenation of the course name and the term.  To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this ```$ ./gb1 Math_251_Fall_2018.p```.  
+All data for a course is stored in a JSON file containing a single 'Course' object which is named by a concatenation of the course name and the term.  To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this ```$ ./gb1 Math_251_Fall_2018.json```.  
 
 You can create a new course by running the application without specifying a file.  You should see a menu like this:
 
@@ -33,5 +33,5 @@ Entering scores is pretty simple and optimized for speed.  Normally you will wan
 
 If you make an invalid entry, such as entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.
 
-The reporting capabilities are not in place yet, but there will be one for overall grades for students, histograms for specific graded items and overall, etc...
+The reporting capabilities are pretty basic at this point, but there will be one for overall grades for students, histograms for specific graded items and overall, etc...
 

@@ -5,6 +5,8 @@ import sys, os
 import subprocess
 import pickle
 import datetime
+import json
+import numpy as np
 
 class Course:
     def __init__(self, name = '', term = ''):
@@ -13,6 +15,7 @@ class Course:
         self.categories = []
         self.gradeables = []
         self.students = []
+        self.actives = None
         self.scores = []
         self.cur_student = None
         self.cur_gradeable = None
@@ -30,24 +33,70 @@ class Course:
     def set_cur_category(self, category):
         self.cur_category = category
 
-    # The name of the associated Pickle file for the course
+    def get_actives(self):
+        if self.actives == None:
+            self.actives = [s for s in self.students if s.is_active]
+        return self.actives
+
+    def remove_student(self, student):
+        self.scores = [score for score in self.scores if score.student != student]
+        self.students.remove(student)
+        self.cur_student = None
+        self.actives = None
+
+    def remove_gradeable(self, gradeable):
+        self.scores = [score for score in self.scores if score.gradeable != gradeable]
+        self.gradeables.remove(gradeable);
+        self.cur_gradeable = None
+
+    def remove_category(self, category):
+        self.scores = [score for score in self.scores if score.gradeable.category != category]
+        self.gradeables = [gradeable for gradeable in self.gradeables if gradeable.category != category]
+        self.categories.remove(category)
+        self.cur_category = None
+
+    # The name of the associated JSON file for the course
     def file_name(self):
         return self.name.replace(' ','_') + "_" \
-               + self.term.replace(' ','_') + ".p"
+               + self.term.replace(' ','_') + ".json"
+
+    def to_dict(self):
+        course = {'name': self.name, 'term': self.term}
+        course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade} for i, c in enumerate(self.categories)]
+        # temporarily add the student object to the dict -- we'll delete it once the scores list is finished
+        course['students'] = [{'id':i, 'first': s.first, 'last': s.last, 'email': s.email, 'obj': s} for i, s in enumerate(self.students)]
+        gradeables = []
+        scores = []
+        for cd in course['categories']:
+            for i, g in enumerate(self.gradeables):
+                questions = []
+                gd = {'id':i, 'cid': cd['id'], 'name': g.name, 'total_pts': g.total_pts, 'sub_pct': g.sub_pct, \
+                        'added_pts': g.added_pct, 'added_pct': g.added_pct}
+                for j, q in enumerate(g.questions):
+                    questions.append( {'id':j, 'gid': i, 'points': q.points} )
+                    for sd in course['students']:
+                        scores.append( {'sid': sd['id'], 'gid': gd['id'], 'qid': j, 'value': get_score(sd['obj'],g,q).value } )
+                gd['questions'] = questions
+                gradeables.append(gd)       
+        course['gradeables'] = gradeables
+        course['scores'] = scores
+        for s in course['students']:
+            del s['obj']
+        return course
 
 class Student:
-    def __init__(self, first = '', last = '', email = '', is_active=True):
+    def __init__(self, first = '', last = '', email = '', is_active=1):
         self.first = first
         self.last = last
         self.email = email
         self.is_active = is_active
        
     def name(self):
-        return self.first + (' ' + self.last[0] if self.last else '')
+        return self.first + (' {0:s}.'.format(self.last[0]) if self.last else '')
 
     def fullname(self):
         return self.first + ' ' + self.last
-    
+        
 class Question:
     def __init__(self, gradeable, points):
         self.gradeable = gradeable
@@ -90,11 +139,11 @@ class Gradeable:
         return None
 
 class Score:
-    def __init__(self, student, gradeable, question):
+    def __init__(self, student, gradeable, question, value = 0.0):
         self.student = student
         self.gradeable = gradeable
         self.question = question
-        self.value = 0.0
+        self.value = value
 
 def get_score(student, gradeable, question):
     q = gradeable.get_question(question)
@@ -105,13 +154,52 @@ def get_score(student, gradeable, question):
     gb.scores.append(s)
     return s
 
+
+def course_from_dict(course):
+    category_dict = {item['id'] : item for item in course['categories']}
+    gradeable_dict = {item['id'] : item for item in course['gradeables']}
+    student_dict = {item['id'] : item for item in course['students']}
+    question_dict = {(q['gid'],q['id']) : q for g in course['gradeables'] for q in g['questions'] }
+    course_obj = Course(course['name'], course['term'])
+    categories = []
+    gradeables = []
+    students = []
+    scores = []
+    for cd in course['categories']:
+        category = Category(cd['name'], cd['pct_of_grade'])
+        category_dict[cd['id']]['obj'] = category
+        categories.append(category)
+    course_obj.categories = categories
+    for sd in course['students']:
+        student = Student(sd['first'], sd['last'], sd['email'])
+        student_dict[sd['id']]['obj'] = student
+        students.append(student)
+    course_obj.students = students
+    for gd in course['gradeables']:
+        gradeable = Gradeable(gd['name'], category_dict[gd['cid']]['obj'], gd['total_pts'], gd['sub_pct'], gd['added_pts'], gd['added_pct'])
+        gradeable_dict[gd['id']]['obj'] = gradeable
+        gradeables.append(gradeable)
+        for qd in gd['questions']:
+            question = Question(gradeable, qd['points'])
+            question_dict[(qd['gid'],qd['id'])]['obj'] = question
+            gradeable.questions.append(question)
+    course_obj.gradeables = gradeables
+    for sd in course['scores']:
+        score = Score(student_dict[sd['sid']]['obj'], gradeable_dict[sd['gid']]['obj'], question_dict[(sd['gid'],sd['qid'])]['obj'], sd['value'])
+        scores.append(score)
+    course_obj.scores = scores
+    return course_obj
+
 def read(file_name):
-    with open(file_name,'rb') as f:
-        return pickle.load(f)
+    with open(file_name,'r') as f:
+        course_dict = json.load(f)
+    return course_from_dict(course_dict)
 
 def save(course, file_name):
-    with open(file_name,'wb') as f:
-        pickle.dump(course, f)
+    data = json.dumps(course.to_dict(), indent=2)
+    with open(file_name, mode='w', encoding='utf-8') as f:
+        #json.dump(course.to_dict(), f, indent=2)
+        f.write(data)
 
 def save_and_exit():
     save(gb, gb.file_name())
@@ -121,22 +209,6 @@ def save_current():
     save(gb, gb.file_name())
 
 
-# These helpers set the current gradeable, student, etc... and then open a menu item
-def set_gradeable_open_score_one_entry(gradeable):
-    gb.set_cur_gradeable(gradeable)
-    m_score_one_entry.open()
-
-def set_gradeable_open_gradeable_edit_del(gradeable):
-    gb.set_cur_gradeable(gradeable)
-    m_gradeable_edit_del.open()
-
-def set_and_open_category_edit_del(category):
-    gb.set_cur_category(category)
-    m_category_edit_del.open()
-  
-def set_and_open_student(student):
-    gb.set_cur_student(student)
-    m_student_edit_del.open()
 
 # --------------------------------------
 # User input and type conversion helpers
@@ -148,22 +220,19 @@ def get_string(title, default=None, prompt=" >> "):
     return default if default != None and sval == '' else sval
 
 def get_bool(title, default=None, prompt=" >> "):
-    ftitle = title if default == None else title + " ({0:s})".format('Y' if default == True else 'N')
+    ftitle = title if default == None else title + " ({0:s})".format('Y' if default == 1 else 'N')
     while True:
         print(ftitle)
         sval = input(prompt).lower()
         if default != None and sval == '':
             return default
         if sval == 'y':
-            return True
+            return 1
         elif sval == 'n':
-            return False
+            return 0
         else:
             say("invalid")
             print("Value should be Y or N")
-
-def bool_to_yn(flag):
-    return "Y" if flag == True else "N"
 
 def get_valid_float(title, minval, maxval, default=None, prompt=" >> ") :
     valid = False
@@ -233,7 +302,6 @@ def get_space_separated_floats(title, valid_sum, default=None, prompt=" >> "):
 
 # Give an audible warning
 def say(phrase):
-    #subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
     subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])
 
 #--------------------
@@ -254,8 +322,7 @@ def edit_category():
     set_category_options()
 
 def delete_category():
-    gb.categories.remove(gb.cur_category)
-    gb.cur_category = None
+    gb.remove_category(gb.cur_category)
     set_category_options()
 
 #-------------------
@@ -268,16 +335,19 @@ def import_students():
     for line in lines:
         first, last, email = line.split()
         gb.students.append(Student(first, last, email))
+    gb.students.sort(key=lambda s : s.name())
+    gb.actives = None
     set_student_options()
-    print('imported students')
 
 def add_student():
     first = get_string("Enter First Name")
     last = get_string("Enter Last Name")
     email = get_string("Enter Email")
-    is_active = get_bool("Is the Student Active? (y/n)", True)
+    is_active = get_bool("Is the Student Active? (y/n)", 1)
     student = Student(first, last, email, is_active)
     gb.students.append(student)
+    gb.students.sort(key=lambda s : s.name())
+    gb.actives = None
     set_student_options()
 
 def edit_student():
@@ -289,11 +359,14 @@ def edit_student():
     gb.cur_student.last = last
     gb.cur_student.email = email
     gb.cur_student.is_active = is_active
+    gb.students.sort(key=lambda s : s.name())
+    gb.actives = None 
     set_student_options()
 
 def delete_student():
-    gb.students.remove(gb.cur_student)
-    gb.cur_student = None
+    gb.remove_student(gb.cur_student)
+    gb.students.sort(key=lambda s : s.name())
+    gb.actives = None
     set_student_options()
 
 #------------------
@@ -351,8 +424,7 @@ def edit_gradeable():
     set_gradeable_options()
 
 def delete_gradeable():
-    gb.gradeables.remove(gb.cur_gradeable)
-    gb.cur_gradeable = None
+    gb.remove_gradeable(gb.cur_gradeable)
     set_gradeable_options()
 
 #------------
@@ -370,9 +442,17 @@ def input_scores(gradeable):
 # If the indices are out of bounds, go to the first question last question for the last student.
 def input_score(st_idx, q_idx):
     cg = gb.cur_gradeable
-    if st_idx < 0 or st_idx >= len(gb.students):
+    q_ct = len(cg.questions)
+    s_ct = len(gb.get_actives())
+    if st_idx <= 0 and q_idx < 0:
+        print("First One")
+        say("first one")
         input_score( 0, 0)
-    elif q_idx >= len(cg.questions):
+    elif st_idx >= s_ct - 1 and q_idx >= q_ct:
+        print("Last One")
+        say("last one")
+        input_score( s_ct-1, q_ct-1)
+    elif q_idx >= q_ct:
         input_score(st_idx + 1, 0)
     elif q_idx < 0:
         input_score( st_idx - 1, -1)
@@ -423,10 +503,16 @@ def input_student_scores(student):
 def input_student_score( q_idx):
     cg = gb.cur_gradeable
     s = gb.cur_student
+    q_ct = len(cg.questions)
+
     if q_idx >= len(cg.questions):
-        input_student_score( 0)
+        print("Last One")
+        say("last one")
+        input_student_score( q_ct - 1)
     elif q_idx < 0:
-        input_student_score( -1)
+        print("First One")
+        say("first one")
+        input_student_score( 0 )
     else:
         q = cg.questions[q_idx]
         score = get_score(s, cg, q)
@@ -454,6 +540,72 @@ def input_student_score( q_idx):
                 input_student_score( q_idx)
     return
 
+def rpt_graded_item_stats():
+    return None
+
+
+def rpt_graded_item_details():
+    cg = gb.cur_gradeable
+    actives = gb.get_actives()
+    ar = np.array([[get_score(s,cg,q).value for q in cg.questions] for s in actives])
+    n,m = ar.shape
+    title="{0:s} Details".format(cg.name)
+    print(title)
+    print("-"*len(title))
+    print("Student".ljust(20), end='')
+    for j in range(m):
+        print("#{0:d}".format(j+1).rjust(6), end='')
+    print("Total".rjust(10))
+    for i in range(n):
+        print("{0:s}".format(actives[i].name()).ljust(20), end='')
+        for j in range(m):
+            print("{0:.1f}".format(ar[i,j]).rjust(6), end='')
+        print("{0:.1f}".format(ar[i,:].sum()).rjust(10))
+    print("-"*(20 + 6*m + 10))
+    print("Average".ljust(20), end='')
+    for j in range(m):
+        print("{0:.1f}".format(ar[:,j].mean()).rjust(6),end='')
+    print("{0:.1f}".format(ar.sum(1).mean()).rjust(10))
+    print('')
+    print('')
+    input("Press <Enter>")
+
+def rpt_student_scores():
+    return None
+
+def rpt_course_summary():
+    return None
+
+
+#-------------
+# Menu Helpers
+#-------------
+# These helpers set the current gradeable, student, etc... and then open a menu item
+def set_gradeable_open_score_one_entry(gradeable):
+    gb.set_cur_gradeable(gradeable)
+    m_score_one_entry.open()
+
+def set_gradeable_open_gradeable_edit_del(gradeable):
+    gb.set_cur_gradeable(gradeable)
+    m_gradeable_edit_del.open()
+
+def set_and_open_category_edit_del(category):
+    gb.set_cur_category(category)
+    m_category_edit_del.open()
+  
+def set_and_open_student(student):
+    gb.set_cur_student(student)
+    m_student_edit_del.open()
+
+def set_and_open_reports_gradeable(gradeable):
+    gb.set_cur_gradeable(gradeable)
+    m_reports_gradeable.open()
+
+def set_and_open_reports_student(student):
+    gb.set_cur_student(student)
+    m_reports_student.open()
+
+
 #------------------------
 # setup category menu logic
 #------------------------
@@ -470,7 +622,7 @@ def set_category_options():
 
 def set_category_edit_del_options():
     m_category_edit_del.options = []
-    m_category_edit_del.add_option("Return to Manage Categories", m_category_edit_del.close)
+    m_category_edit_del.add_option("Return to Category List", m_category_edit_del.close)
     m_category_edit_del.add_option("Edit", edit_category)
     m_category_edit_del.add_option("Delete", delete_category)
 
@@ -486,10 +638,11 @@ def set_student_options():
                                     lambda i=item: set_and_open_student(i))
         #m_student.add_option(item.name(), lambda i=item: set_and_open_student(i))
         set_score_one_entry_options()
+        set_reports_student_sel_options()
 
 def set_student_edit_del_options():
     m_student_edit_del.options = []
-    m_student_edit_del.add_option("Return to Manage Students", m_student_edit_del.close)
+    m_student_edit_del.add_option("Return to Student List", m_student_edit_del.close)
     m_student_edit_del.add_option("Edit", edit_student)
     m_student_edit_del.add_option("Delete", delete_student)
 
@@ -507,10 +660,13 @@ def set_gradeable_options():
     for item in gb.gradeables:
         m_gradeable.add_option("{0:s}".format(item.name), 
                                     lambda i=item: set_gradeable_open_gradeable_edit_del(i))
+        set_score_all_options()
+        set_score_one_options()
+        set_reports_gradeable_sel_options()
 
 def set_gradeable_edit_del_options():
     m_gradeable_edit_del.options = []
-    m_gradeable_edit_del.add_option("Return to Manage Graded Items", m_gradeable_edit_del.close)
+    m_gradeable_edit_del.add_option("Return to Graded Items List", m_gradeable_edit_del.close)
     m_gradeable_edit_del.add_option("Edit", edit_gradeable)
     m_gradeable_edit_del.add_option("Delete", delete_gradeable)
 
@@ -531,7 +687,7 @@ def set_score_one_options():
 
 def set_score_one_entry_options():
     m_score_one_entry.options=[]
-    m_score_one_entry.add_option("Return to Student Selection", m_score_one_entry.close)
+    m_score_one_entry.add_option("Return to Student List", m_score_one_entry.close)
     for item in gb.students:
         m_score_one_entry.add_option(item.name(), lambda i=item: input_student_scores(i))
 
@@ -541,10 +697,36 @@ def set_score_one_entry_options():
 def set_reports_options():
     m_reports.options = []
     m_reports.add_option("Return to Gradebook", m_reports.close)
-    m_reports.add_option("Graded Item Reports", m_reports_gradeable
-    m_reports_gradeable = Menu(title = "Reports on Specific Graded Items")
-    m_reports_student = Menu(title = "Reports on Individual Students")
-    m_reports_summary = Menu(title = "Summary Reports")
+    m_reports.add_option("Course Summary Report", rpt_course_summary)
+    m_reports.add_option("Student Reports", m_reports_student_sel.open)
+    m_reports.add_option("Graded Item Reports", m_reports_gradeable_sel.open)
+    set_reports_gradeable_sel_options()
+    set_reports_student_sel_options()
+
+def set_reports_gradeable_sel_options():
+    m_reports_gradeable_sel.options = []
+    m_reports_gradeable_sel.add_option("Return to Report Menu", m_reports_gradeable_sel.close)
+    for item in gb.gradeables:
+        m_reports_gradeable_sel.add_option(item.name, lambda i=item : set_and_open_reports_gradeable(i))
+    set_reports_gradeable_options()
+
+def set_reports_student_sel_options():    
+    m_reports_student_sel.options = []
+    m_reports_student_sel.add_option("Return to Report Menu", m_reports_student_sel.close)
+    for item in gb.get_actives():
+        m_reports_student_sel.add_option(item.name(), lambda i=item : set_and_open_reports_student(i))
+    set_reports_student_options
+
+def set_reports_gradeable_options():
+    m_reports_gradeable.options = []
+    m_reports_gradeable.add_option("Return to Graded Item List", m_reports_gradeable.close)
+    m_reports_gradeable.add_option("Graded Item Statistics", rpt_graded_item_stats)
+    m_reports_gradeable.add_option("Graded Item Details", rpt_graded_item_details)
+
+def set_reports_student_options():
+    m_reports_student.options = []
+    m_reports_student.add_option("Return to Student List", m_reports_student.close)
+    m_reports_student.add_option("Student Scores", rpt_student_scores)
 
 #------------------------
 # main menu logic
@@ -603,9 +785,11 @@ if __name__ == "__main__":
     m_score_one = Menu(title = "Enter Scores (One Student)")
     m_score_one_entry = Menu(title = "Enter Scores for Student")
     m_reports = Menu(title = "Reports")
+    m_reports_gradeable_sel = Menu(title = "Select Graded Item")
     m_reports_gradeable = Menu(title = "Reports on Specific Graded Items")
+    m_reports_student_sel = Menu(title = "Select Student")
     m_reports_student = Menu(title = "Reports on Individual Students")
-    m_reports_summary = Menu(title = "Summary Reports")
     initialize_menus()
+    subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
     m_main.open()
 

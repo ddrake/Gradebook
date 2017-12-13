@@ -2,11 +2,13 @@
 ## Simple command-line application for quickly setting up a course to teach, recording student scores and viewing reports.
 
 At this point the application has only been tested on Linux Mint 17 and 18. It requires Python 3.x.
-The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Then make sure the gb1.py script is executable, via ```chmod +x gb1.py``` 
+The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Of course, you will also want to have numpy installed for python3.
 
-All data for a course is stored in a JSON file containing a single 'Course' object which is named by a concatenation of the course name and the term.  To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this ```$ ./gb1 Math_251_Fall_2018.json```.  
+Now make sure the gb1.py script is executable, via ```chmod +x gb1.py``` 
 
-You can create a new course by running the application without specifying a file.  You should see a menu like this:
+All data for a course is stored in a single JSON file.  The top level 'Course' object is named by a concatenation of the course name and the term.  It contains collections of Categories, Graded Items, Students and Scores.  
+
+To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this ```$ ./gb1 Math_251_Fall_2018.json```.  You can create a new course by running the application without specifying a file.  You should see a menu like this:
 
 Gradebook
 

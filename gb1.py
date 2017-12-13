@@ -3,7 +3,6 @@
 from menu import Menu
 import sys, os
 import subprocess
-import pickle
 import datetime
 import json
 import numpy as np

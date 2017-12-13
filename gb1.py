@@ -58,6 +58,14 @@ class Course:
         self.categories.remove(category)
         self.cur_category = None
 
+    def categories_with_scores(self):
+        return [c for c in self.categories \
+                if any(s for s in self.scores if s.gradeable.category is c and s.value > 0.0)]
+
+    def gradeables_with_scores(self):
+        return [g for g in self.gradeables \
+                if any(s for s in self.scores if s.gradeable is g and s.value > 0.0)]
+
     # The name of the associated JSON file for the course
     def file_name(self):
         return self.name.replace(' ','_') + "_" \
@@ -86,6 +94,16 @@ class Category:
         self.name = name
         self.pct_of_grade = pct_of_grade
 
+    def combined_score(self, student):
+        gs = self.gradeables()
+        if any(g for g in gs if g.sub_pct !=0):
+            return sum(g.adjusted_score(student) * \
+                    (g.sub_pct/100.0 if g.sub_pct != 0.0 else 1.0) for g in gs)
+        else:
+            return np.array([g.adjusted_score(student) for g in gs]).mean()
+
+    def gradeables(self):
+        return [g for g in gb.gradeables if g.category is self]
 class Gradeable:
     def __init__(self, name='', category = None, total_pts=0.0, \
             sub_pct = 0.0, added_pts = 0.0, added_pct = 0.0):
@@ -110,6 +128,10 @@ class Gradeable:
                 return q
         return None
 
+    def adjusted_score(self, student):
+        return (sum([get_score(student, self, q).value for q in self.questions]) \
+                + self.added_pts)*(100.0+self.added_pct)/100.0
+        
 class Score:
     def __init__(self, student, gradeable, question, value = 0.0):
         self.student = student
@@ -129,29 +151,32 @@ def get_score(student, gradeable, question):
 
 def course_to_dict():
     course = {'name': gb.name, 'term': gb.term}
-    course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade} \
+    course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, 'obj': c} \
             for i, c in enumerate(gb.categories)]
     # add the student object to the dict -- delete it once the scores list is finished
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, 'email': s.email, 'obj': s} \
             for i, s in enumerate(gb.students)]
     gradeables = []
     scores = []
-    for cd in course['categories']:
-        for i, g in enumerate(gb.gradeables):
-            questions = []
-            gd = {'id':i, 'cid': cd['id'], 'name': g.name, 'total_pts': g.total_pts, \
-                    'sub_pct': g.sub_pct, 'added_pts': g.added_pct, 'added_pct': g.added_pct}
-            for j, q in enumerate(g.questions):
-                questions.append( {'id':j, 'gid': i, 'points': q.points} )
-                for sd in course['students']:
-                    scores.append( {'sid': sd['id'], 'gid': gd['id'], 'qid': j, \
-                            'value': get_score(sd['obj'],g,q).value } )
-            gd['questions'] = questions
-            gradeables.append(gd)       
+    cat_dict = {item['obj']: item for item in course['categories']}
+    for i, g in enumerate(gb.gradeables):
+        questions = []
+        gd = {'id':i, 'cid': cat_dict[g.category]['id'], 'name': g.name, 'total_pts': g.total_pts, \
+                'sub_pct': g.sub_pct, 'added_pts': g.added_pct, 'added_pct': g.added_pct}
+        for j, q in enumerate(g.questions):
+            questions.append( {'id':j, 'gid': i, 'points': q.points} )
+            for sd in course['students']:
+                scores.append( {'sid': sd['id'], 'gid': gd['id'], 'qid': j, \
+                        'value': get_score(sd['obj'],g,q).value } )
+        gd['questions'] = questions
+        gradeables.append(gd)       
+    
     course['gradeables'] = gradeables
     course['scores'] = scores
     for s in course['students']:
         del s['obj']
+    for c in course['categories']:
+        del c['obj']
     return course
 
 def course_from_dict(course):
@@ -318,7 +343,7 @@ def add_category():
 
 def edit_category():
     name = get_string("Enter Category Name", gb.cur_category.name)
-    pct_of_grade = get_valid_float("Percent of Grade ({0:.1f})".format(gb.cur_category.pct_of_grade), 0, 100, gb.cur_category.pct_of_grade)
+    pct_of_grade = get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
     gb.cur_category.name = name if name else gb.cur_category.name
     gb.cur_category.pct_of_grade = pct_of_grade
     set_category_options()
@@ -395,7 +420,7 @@ def add_gradeable():
     category = gb.categories[cat-1]
     total_pts = get_valid_float("Total Points", 0, 10000)
     fpts = get_space_separated_floats("Enter question point values separated by whitespace", total_pts)
-    sub_pct = get_valid_float("Retake Sub-percent", 0, 100, 100.0)
+    sub_pct = get_valid_float("Retake Sub-percent", 0, 100, 0.0)
     added_pts = get_valid_float("Added Points", 0, 10000, 0.0)
     added_pct = get_valid_float("Added Percent", 0, 100, 0.0)
     gradeable = Gradeable(name, category, total_pts, sub_pct, added_pts, added_pct)
@@ -406,13 +431,16 @@ def add_gradeable():
 
 def edit_gradeable():
     cg = gb.cur_gradeable
+    has_scores = any(s for s in gb.scores if s.gradeable is cg)
     name = get_string("Enter Graded Item Name", cg.name)
     def_sel = gb.categories.index(cg.category) + 1
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories], def_sel )
     category = gb.categories[cat-1]
     total_pts = get_valid_float("Total Points", 0, 10000, cg.total_pts)
-    pts = [q.points for q in cg.questions]
-    fpts = get_space_separated_floats("Enter question point values separated by whitespace", total_pts, pts)
+    if not has_scores:
+        pts = [q.points for q in cg.questions]
+        fpts = get_space_separated_floats("Enter question point values separated by whitespace", \
+                total_pts, pts)
     sub_pct = get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
     added_pts = get_valid_float("Added Points", 0, 10000, cg.added_pts)
     added_pct = get_valid_float("Added Percent", 0, 100, cg.added_pct)
@@ -422,7 +450,8 @@ def edit_gradeable():
     cg.sub_pct = sub_pct
     cg.added_pts = added_pts
     cg.added_pct = added_pct
-    cg.questions = [Question(cg, p) for p in fpts]
+    if not has_scores:
+        cg.questions = [Question(cg, p) for p in fpts]
     set_gradeable_options()
 
 def delete_gradeable():
@@ -554,27 +583,28 @@ def rpt_graded_item_details():
     totinds = tots.argsort()
     ar, names = ar[totinds,:], names[totinds]
     tots, pcts = tots[totinds], pcts[totinds]
- 
+    name_col_width, data_col_width, total_col_width = 16, 6, 8
     title="{0:s} Details".format(cg.name)
     print(title)
     print("-"*len(title))
-    print("Student".ljust(20), end='')
+    print("Student".ljust(name_col_width), end='')
     for j in range(m):
-        print("#{0:d}".format(j+1).rjust(6), end='')
-    print("Total".rjust(10), "%".rjust(5))
+        print("#{0:d}".format(j+1).rjust(data_col_width), end='')
+    print("Total".rjust(total_col_width),end='')
+    print("Pct.".rjust(total_col_width))
     for i in range(n):
-        print("{0:s}".format(names[i]).ljust(20), end='')
+        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
         for j in range(m):
-            print("{0:.1f}".format(ar[i,j]).rjust(6), end='')
-        print("{0:.1f}".format(tots[i]).rjust(10), end='')
-        print("{0:.1f}".format(pcts[i]).rjust(6))
+            print("{0:.1f}".format(ar[i,j]).rjust(data_col_width), end='')
+        print("{0:.1f}".format(tots[i]).rjust(total_col_width), end='')
+        print("{0:.1f}".format(pcts[i]).rjust(total_col_width))
 
-    print("-"*(20 + 6*(m+1) + 10))
-    print("Average".ljust(20), end='')
+    print("-"*(name_col_width + m*data_col_width + 2*total_col_width))
+    print("Average".ljust(name_col_width), end='')
     for j in range(m):
-        print("{0:.1f}".format(ar[:,j].mean()).rjust(6), end='')
-    print("{0:.1f}".format(tots.mean()).rjust(10), end='')
-    print("{0:.1f}".format(pcts.mean()).rjust(6))
+        print("{0:.1f}".format(ar[:,j].mean()).rjust(data_col_width), end='')
+    print("{0:.1f}".format(tots.mean()).rjust(total_col_width), end='')
+    print("{0:.1f}".format(pcts.mean()).rjust(total_col_width))
     print('')
     print('')
     input("Press <Enter>")
@@ -582,8 +612,73 @@ def rpt_graded_item_details():
 def rpt_student_scores():
     return None
 
-def rpt_course_summary():
-    return None
+def rpt_class_detail():
+    gradeables = gb.gradeables_with_scores()
+    names = np.array([s.name() for s in gb.get_actives()])
+    gnames = [g.name for g in gradeables]
+    ar = np.array([[g.adjusted_score(s) for g in gradeables] for s in gb.get_actives()])
+    n,m = ar.shape
+    possibles = np.array([g.total_pts for g in gradeables])
+    pcts = ar/possibles*100.0
+    aves = pcts.mean(1)
+    plot_hist(aves)
+    aveinds = aves.argsort()
+    pcts, names, aves = pcts[aveinds,:], names[aveinds], aves[aveinds]
+    name_col_width, data_col_width, total_col_width = 16, 8, 8
+    title="Class Details Report"
+    print(title)
+    print("-"*len(title))
+    print("Student".ljust(name_col_width), end='')
+    for gn in gnames:
+        print("{0:s}".format(gn).rjust(data_col_width), end='')
+    print("Avg.".rjust(total_col_width))
+    for i in range(n):
+        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
+        for j in range(m):
+            print("{0:.1f}".format(pcts[i,j]).rjust(data_col_width), end='')
+        print("{0:.1f}".format(aves[i]).rjust(total_col_width))
+    print("-"*(name_col_width + m*data_col_width + 2*total_col_width))
+    print("Average".ljust(name_col_width), end='')
+    for j in range(m):
+        print("{0:.1f}".format(pcts[:,j].mean()).rjust(data_col_width), end='')
+    print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
+    print('')
+    print('')
+    input("Press <Enter>")
+
+def rpt_class_summary():
+    cats = gb.categories_with_scores()
+    names = np.array([s.name() for s in gb.get_actives()])
+    cnames = [c.name for c in cats]
+    ar = np.array([[c.combined_score(s) for c in cats] for s in gb.get_actives()])
+    n,m = ar.shape
+    possibles = np.array([sum([g.total_pts for g in c.gradeables()]) for c in cats])
+    pcts = ar/possibles*100.0
+    aves = pcts.mean(1)
+    plot_hist(aves)
+    aveinds = aves.argsort()
+    pcts, names, aves = pcts[aveinds,:], names[aveinds], aves[aveinds]
+    name_col_width, data_col_width, total_col_width = 16, 8, 8
+    title="Class Summary Report"
+    print(title)
+    print("-"*len(title))
+    print("Student".ljust(name_col_width), end='')
+    for cn in cnames:
+        print("{0:s}".format(cn).rjust(data_col_width), end='')
+    print("Avg.".rjust(total_col_width))
+    for i in range(n):
+        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
+        for j in range(m):
+            print("{0:.1f}".format(pcts[i,j]).rjust(data_col_width), end='')
+        print("{0:.1f}".format(aves[i]).rjust(total_col_width))
+    print("-"*(name_col_width + m*data_col_width + 2*total_col_width))
+    print("Average".ljust(name_col_width), end='')
+    for j in range(m):
+        print("{0:.1f}".format(pcts[:,j].mean()).rjust(data_col_width), end='')
+    print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
+    print('')
+    print('')
+    input("Press <Enter>")
 
 
 #-------------
@@ -712,7 +807,8 @@ def set_score_one_entry_options():
 def set_reports_options():
     m_reports.options = []
     m_reports.add_option("Return to Gradebook", m_reports.close)
-    m_reports.add_option("Course Summary Report", rpt_course_summary)
+    m_reports.add_option("Class Detail Report", rpt_class_detail)
+    m_reports.add_option("Class Summary Report", rpt_class_summary)
     m_reports.add_option("Student Reports", m_reports_student_sel.open)
     m_reports.add_option("Graded Item Reports", m_reports_gradeable_sel.open)
     set_reports_gradeable_sel_options()
@@ -740,8 +836,6 @@ def set_reports_gradeable_options():
     m_reports_gradeable.options = []
     m_reports_gradeable.add_option("Return to Graded Item List", \
             m_reports_gradeable.close)
-    m_reports_gradeable.add_option("Graded Item Statistics", \
-            rpt_graded_item_stats)
     m_reports_gradeable.add_option("Graded Item Details", \
             rpt_graded_item_details)
 
@@ -760,11 +854,11 @@ def set_main_options():
     m_main.add_option("Save", save_current)
     m_main.add_option("Enter Scores All Students", m_score_all.open)
     m_main.add_option("Enter Scores One Student", m_score_one.open)
-    m_main.add_option("Import Students", m_student_import.open)
-    m_main.add_option("Manage Students", m_student.open)
-    m_main.add_option("Manage Categories", m_category.open)
-    m_main.add_option("Manage Graded Items", m_gradeable.open)
     m_main.add_option("Reports", m_reports.open)
+    m_main.add_option("Manage Graded Items", m_gradeable.open)
+    m_main.add_option("Manage Categories", m_category.open)
+    m_main.add_option("Manage Students", m_student.open)
+    m_main.add_option("Import Students", m_student_import.open)
     m_main.add_option("Edit Course", edit_course)
 
 def initialize_menus():
@@ -815,6 +909,6 @@ if __name__ == "__main__":
     m_reports_student_sel = Menu(title = "Select Student")
     m_reports_student = Menu(title = "Reports on Individual Students")
     initialize_menus()
-    subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
+    #subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
     m_main.open()
 

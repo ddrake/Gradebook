@@ -360,7 +360,7 @@ def import_students():
         text = f.read()
     lines = text.rstrip().split('\n')
     for line in lines:
-        first, last, email = line.split()
+        first, last, email = line.split('\t')
         gb.students.append(Student(first, last, email))
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None

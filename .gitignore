@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# app specific
+*.json
+*.html
+*.txt
+*.swp
+parser.py
+

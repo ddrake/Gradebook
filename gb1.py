@@ -9,6 +9,7 @@ from model import *
 import persist
 from ui_helper import *
 import menus
+import gmail
 #--------------------
 # Category Management
 #--------------------
@@ -374,12 +375,49 @@ def rpt_class_summary(gb):
     print('')
     input("Press <Enter>")
 
-# Email current grade status to a single student
-def rpt_student_scores(gb, send_email=False):
-    return None
-
-def rpt_class_summary_line(gb, send_email=False):
+def student_summary_line_body(student, grade, cats, pcts, send_email):
     name_col_width = 16
+    if send_email:
+        salutation = "Hi {0:s},\n\n".format(student.first)
+        salutation += "Here's your current estimated grade information: \n\n"
+    else:
+        salutation = "{0:s}".format(student.name()).ljust(name_col_width)
+
+    grade_info = "Current Est. Grade: {0:.1f} based on: ".format(grade)
+    m = len(cats)
+    for j in range(m):
+        cat = cats[j]
+        punct = ', ' if j < m - 1 else '.'
+        grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
+                .format(cat.name, cat.pct_of_grade, pcts[j], punct)
+    if send_email:
+        signature = "\n\nBest, Dow"
+        g = gmail.Gmail("Current Est. Grade", salutation + grade_info + signature)
+        print(student.email)
+        print(salutation + grade_info + signature)
+        g.recipients = [student.email]
+        g.send()
+    else:
+        print(salutation, grade_info)
+
+# Display or Email current grade status to a single student
+def rpt_student_summary_line(gb, send_email=False, stud=None):
+    cats = gb.categories_with_scores()
+    if len(cats) == 0:
+        input("No categories with Scores - <Enter> to continue")
+        return
+    student = stud if stud != None else gb.cur_student
+    ar = np.array([c.combined_score(student) for c in cats])
+    possibles = np.array([sum([g.total_pts for g in c.gradeables_with_scores()]) for c in cats])
+    pcts = ar/possibles*100.0
+    weights = np.array([cat.pct_of_grade for cat in cats])
+    adj_weights = weights/sum(weights)
+    grade = (pcts*adj_weights).sum()
+    student_summary_line_body(student, grade, cats, pcts, send_email) 
+    input("Press <Enter>")
+
+# Display or Email current grade status to all students
+def rpt_class_summary_line(gb, send_email=False):
     cats = gb.categories_with_scores()
     if len(cats) == 0:
         input("No categories with Scores - <Enter> to continue")
@@ -394,23 +432,7 @@ def rpt_class_summary_line(gb, send_email=False):
     grades = (pcts*adj_weights).sum(1)
     for i in range(n):
         student = students[i]
-        if send_email:
-            salutation = "Hi {0:s},\n\n".format(student.first)
-            salutation = "Here's your current estimated grade information: \n\n"
-        else:
-            salutation = "{0:s}".format(student.name()).ljust(name_col_width)
-
-        grade_info = "Current Est. Grade: {0:.1f} based on: ".format(grades[i])
-        for j in range(m):
-            cat = cats[j]
-            punct = ', ' if j < m - 1 else '.'
-            grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
-                    .format(cat.name, cat.pct_of_grade, pcts[i,j], punct)
-        if send_email:
-            print("not really sending...")
-        else:
-            print(salutation, grade_info)
-
+        rpt_student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
     input("Press <Enter>")
 
 def save_and_exit(gb):

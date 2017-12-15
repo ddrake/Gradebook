@@ -185,7 +185,10 @@ def set_reports_student_options(gb):
     m_reports_student.options = []
     m_reports_student.add_option("Return to Student List", \
             m_reports_student.close)
-    m_reports_student.add_option("Student Scores", app.rpt_student_scores)
+    m_reports_student.add_option("Student Scores Preview", \
+            lambda : app.rpt_student_summary_line(gb))
+    m_reports_student.add_option("Student Scores Email", \
+            lambda : app.rpt_student_summary_line(gb,True))
 
 #------------------------
 # main menu logic

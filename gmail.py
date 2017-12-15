@@ -11,6 +11,7 @@ class Gmail():
         cred = dict([l.split(':') for l in lines])
         self.gmail_user = cred['gmail_user']
         self.gmail_password = cred['gmail_password']
+        self.signature = cred['signature']
         self.subject = subject
         self.body = body
         self.sender = self.gmail_user

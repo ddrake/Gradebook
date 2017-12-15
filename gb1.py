@@ -391,8 +391,9 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
         grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
                 .format(cat.name, cat.pct_of_grade, pcts[j], punct)
     if send_email:
-        signature = "\n\nBest, Dow"
-        g = gmail.Gmail("Current Est. Grade", salutation + grade_info + signature)
+        g = gmail.Gmail("Current Est. Grade", '')
+        signature = g.signature 
+        g.body = salutation + grade_info + signature
         print(student.email)
         print(salutation + grade_info + signature)
         g.recipients = [student.email]

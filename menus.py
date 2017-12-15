@@ -150,6 +150,7 @@ def set_reports_options(gb):
     m_reports.add_option("Return to Gradebook", m_reports.close)
     m_reports.add_option("Class Detail Report", lambda:app.rpt_class_detail(gb))
     m_reports.add_option("Class Summary Report", lambda:app.rpt_class_summary(gb))
+    m_reports.add_option("Class Summary Lines", lambda:app.rpt_class_summary_line(gb))
     m_reports.add_option("Student Reports", m_reports_student_sel.open)
     m_reports.add_option("Graded Item Reports", m_reports_gradeable_sel.open)
     set_reports_gradeable_sel_options(gb)

@@ -246,8 +246,6 @@ def input_student_score(gb, q_idx):
 #--------
 # Reports
 #--------
-def rpt_graded_item_stats(gb):
-    return None
 
 def plot_hist(pcts, title):
     h=np.histogram(pcts,bins=(0,60,70,80,90,100))
@@ -299,8 +297,6 @@ def rpt_graded_item_details(gb):
     print('')
     input("Press <Enter>")
 
-def rpt_student_scores(gb):
-    return None
 
 def rpt_class_detail(gb):
     gradeables = gb.gradeables_with_scores()
@@ -376,6 +372,45 @@ def rpt_class_summary(gb):
     print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
     print('')
     print('')
+    input("Press <Enter>")
+
+# Email current grade status to a single student
+def rpt_student_scores(gb, send_email=False):
+    return None
+
+def rpt_class_summary_line(gb, send_email=False):
+    name_col_width = 16
+    cats = gb.categories_with_scores()
+    if len(cats) == 0:
+        input("No categories with Scores - <Enter> to continue")
+        return
+    students = gb.get_actives()
+    ar = np.array([[c.combined_score(s) for c in cats] for s in students])
+    n,m = ar.shape
+    possibles = np.array([sum([g.total_pts for g in c.gradeables_with_scores()]) for c in cats])
+    pcts = ar/possibles*100.0
+    weights = np.array([cat.pct_of_grade for cat in cats])
+    adj_weights = weights/sum(weights)
+    grades = (pcts*adj_weights).sum(1)
+    for i in range(n):
+        student = students[i]
+        if send_email:
+            salutation = "Hi {0:s},\n\n".format(student.first)
+            salutation = "Here's your current estimated grade information: \n\n"
+        else:
+            salutation = "{0:s}".format(student.name()).ljust(name_col_width)
+
+        grade_info = "Current Est. Grade: {0:.1f} based on: ".format(grades[i])
+        for j in range(m):
+            cat = cats[j]
+            punct = ', ' if j < m - 1 else '.'
+            grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
+                    .format(cat.name, cat.pct_of_grade, pcts[i,j], punct)
+        if send_email:
+            print("not really sending...")
+        else:
+            print(salutation, grade_info)
+
     input("Press <Enter>")
 
 def save_and_exit(gb):

@@ -38,15 +38,19 @@ def delete_category(gb):
 # Student Management
 #-------------------
 def import_students(gb):
-    with open('students.txt','r') as f:
-        text = f.read()
-    lines = text.rstrip().split('\n')
-    for line in lines:
-        first, last, email = line.split('\t')
-        gb.students.append(Student(first, last, email))
-    gb.students.sort(key=lambda s : s.name())
-    gb.actives = None
-    menus.set_student_options(gb)
+    try:
+        with open('students.txt','r') as f:
+            text = f.read()
+        lines = text.rstrip().split('\n')
+        for line in lines:
+            first, last, email = line.split('\t')
+            gb.students.append(Student(first, last, email))
+        gb.students.sort(key=lambda s : s.name())
+        gb.actives = None
+        menus.set_student_options(gb)
+    except:
+        print("The file 'students.txt' could not be found or was incorrectly formatted")
+    input("Press <Enter> to continue...")
 
 def add_student(gb):
     first = get_string("Enter First Name")
@@ -393,13 +397,16 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
         grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
                 .format(cat.name, cat.pct_of_grade, pcts[j], punct)
     if send_email:
-        g = gmail.Gmail("Current Est. Grade", '')
-        signature = g.signature 
-        g.body = salutation + grade_info + '\n\n' + signature
-        print(student.email)
-        print(g.body)
-        g.recipients = [student.email]
-        g.send()
+        try:
+            g = gmail.Gmail("Current Est. Grade", '')
+            signature = g.signature 
+            g.body = salutation + grade_info + '\n\n' + signature
+            print(student.email)
+            print(g.body)
+            g.recipients = [student.email]
+            g.send()
+        except:
+            print("failed to send the email.  Perhaps there is something wrong with the signature file.")
     else:
         print(salutation, grade_info)
 

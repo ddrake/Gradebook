@@ -42,7 +42,7 @@ The reporting capabilities (in progress) will include the following:
 * Graded Item Details: This has one row for each active student and a column for each question on the graded item along with total and percent columns.  The rows are sorted by total so it is easy to see which students are struggling.  An average row is provided at the bottom so you can see which problems were more difficult. 
 * Class Details: This has a similar format to the graded items report, but instead of showing columns for individual questions, shows the total score as a column for each graded item.
 * Class Summary: This groups the graded items into categories and displays the weight for each category.  Unlike the Graded Item Details and Class Details reports, this report is able to apply the special summarization features, such as dropping the lowest quiz or combining the midterm scores with the retake scores.
-* Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.
+* Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.  All you need to do to make this work is rename the file 'gmail_credentials.txt.sample' to 'gmail_credentials.txt' and edit it to include your personal gmail account information and signature.
 
 A histogram with letter grade bins pops up for each of the first three reports.
 

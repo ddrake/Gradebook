@@ -70,5 +70,5 @@ def test_midterm_retake_correct():
     mary = gb.students[1]
     assert mid1.combined_score(joe) == 12
     assert mid1.combined_score(mary) == 13.5
-
+    assert mid1.combined_possible() == 15
 

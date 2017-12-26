@@ -89,10 +89,12 @@ class Question:
         self.points = points
 
 class Category:
-    def __init__(self, course, name='', pct_of_grade=0.0):
+    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0):
         self.name = name
         self.pct_of_grade = pct_of_grade
         self.course = course
+        self.drop_low_n = drop_low_n 
+        # if drop_low_n > 0, all gradeables in category should have same pts
 
     def combined_score(self, student):
         gs = self.gradeables_with_scores()
@@ -100,17 +102,30 @@ class Category:
             return sum(g.adjusted_score(student) * \
                     (g.sub_pct/100.0 if g.sub_pct != 0.0 else 1.0) for g in gs)
         else:
-            return sum([g.adjusted_score(student) for g in gs])
+            gscores = [g.adjusted_score(student) for g in gs]
+            if self.drop_low_n > 0:
+                st_idx = self.drop_low_n if len(gs) > self.drop_low_n  else 0
+                return sum(sorted(gscores)[st_idx:])
+            else:
+                return sum(gscores)
+
 
     def combined_possible(self):
         gs = self.gradeables_with_scores()
         if any(g for g in gs if g.sub_pct !=0):
             return gs[0].total_pts
         else:
-            return sum([g.total_pts for g in gs])
+            if self.drop_low_n > 0:
+                gct = len(gs)-self.drop_low_n
+                gct = gct if gct > 0 else len(gs)
+                return gs[0].total_pts * gct
+            else:
+                return sum([g.total_pts for g in gs])
 
     def gradeables_with_scores(self):
         return [g for g in self.course.gradeables_with_scores() if g.category is self]
+
+ 
 
 class Gradeable:
     def __init__(self, course, name='', category = None, total_pts=0.0, \

@@ -16,13 +16,15 @@ import gmail
 def add_category(gb):
     name = get_string("Enter Category Name")
     pct_of_grade = get_valid_float("Percent of Grade", 0, 100)
-    cat = Category(gb, name, pct_of_grade)
+    drop_low_n = get_valid_int("Drop Lowest n", 0, 3, 0)
+    cat = Category(gb, name, pct_of_grade, drop_low_n)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
 def edit_category(gb):
     name = get_string("Enter Category Name", gb.cur_category.name)
     pct_of_grade = get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
+    gb.cur_category.drop_low_n = get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
     gb.cur_category.name = name if name else gb.cur_category.name
     gb.cur_category.pct_of_grade = pct_of_grade
     menus.set_category_options(gb)
@@ -300,7 +302,7 @@ def rpt_graded_item_details(gb):
 
 
 def rpt_class_detail(gb):
-    gradeables = gb.gradeables_with_scores()
+    gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
     if len(gradeables) == 0:
         input("No Graded Items with Scores - <Enter> to continue")
         return
@@ -346,7 +348,7 @@ def rpt_class_summary(gb):
     cnames = [c.name for c in cats]
     ar = np.array([[c.combined_score(s) for c in cats] for s in gb.get_actives()])
     n,m = ar.shape
-    possibles = np.array([sum([g.total_pts for g in c.gradeables_with_scores()]) for c in cats])
+    possibles = np.array([c.combined_possible() for c in cats])
     pcts = ar/possibles*100.0
     aves = pcts.mean(1)
     title="Class Summary Report"
@@ -409,7 +411,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
         return
     student = stud if stud != None else gb.cur_student
     ar = np.array([c.combined_score(student) for c in cats])
-    possibles = np.array([sum([g.total_pts for g in c.gradeables_with_scores()]) for c in cats])
+    possibles = np.array([c.combined_possible() for c in cats])
     pcts = ar/possibles*100.0
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)
@@ -426,7 +428,7 @@ def rpt_class_summary_line(gb, send_email=False):
     students = gb.get_actives()
     ar = np.array([[c.combined_score(s) for c in cats] for s in students])
     n,m = ar.shape
-    possibles = np.array([sum([g.total_pts for g in c.gradeables_with_scores()]) for c in cats])
+    possibles = np.array([c.combined_possible() for c in cats])
     pcts = ar/possibles*100.0
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)

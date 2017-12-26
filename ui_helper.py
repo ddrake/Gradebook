@@ -46,6 +46,27 @@ def get_valid_float(title, minval, maxval, default=None, prompt=" >> ") :
             print("What?")
     return fval
 
+def get_valid_int(title, minval, maxval, default=None, prompt=" >> ") :
+    valid = False
+    ftitle = title if default == None else title + " ({0:d})".format(default)
+
+    while not valid:
+        print(ftitle)
+        sval = input(prompt)
+        if default != None and sval == '':
+            return default
+        try:
+            ival = int(sval)
+            if ival >= minval and ival <= maxval:
+                valid = True
+            else:
+                say("invalid")
+                print("Value should be between {0:d} and {1:d}".format(minval, maxval))
+        except ValueError:
+            say("What?")
+            print("What?")
+    return ival
+
 def get_int_from_list(title, slist, default=None, prompt = " >> "):
     valid = False
     ftitle = title if default == None else title + " ({0:d})".format(default)

@@ -13,7 +13,8 @@ def save(gb, file_name):
 
 def course_to_dict(gb):
     course = {'name': gb.name, 'term': gb.term}
-    course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, 'obj': c} \
+    course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
+            'drop_low_n': c.drop_low_n, 'obj': c} \
             for i, c in enumerate(gb.categories)]
     # add the student object to the dict -- delete it once the scores list is finished
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, 'email': s.email, 'obj': s} \
@@ -53,7 +54,7 @@ def course_from_dict(course):
     students = []
     scores = []
     for cd in course['categories']:
-        category = Category(course_obj, cd['name'], cd['pct_of_grade'])
+        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'])
         category_dict[cd['id']]['obj'] = category
         categories.append(category)
     course_obj.categories = categories

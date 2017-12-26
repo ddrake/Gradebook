@@ -58,7 +58,7 @@ def set_category_options(gb):
     m_category.options = []
     m_category.add_option("Return to Gradebook", m_category.close)
     m_category.add_option("Add Category", lambda : app.add_category(gb))
-    for item in gb.categories:
+    for item in sorted(gb.categories, key=lambda i: i.name):
         m_category.add_option("{0:s} ({1:.1f})".format(item.name, item.pct_of_grade), 
                                     lambda i=item: set_and_open_category_edit_del(gb,i))
         set_score_all_options(gb)
@@ -79,7 +79,7 @@ def set_student_options(gb):
     m_student.options = []
     m_student.add_option("Return to Gradebook", m_student.close)
     m_student.add_option("Add Student", lambda : app.add_student(gb))
-    for item in gb.students:
+    for item in sorted(gb.students, key=lambda i: i.name()):
         m_student.add_option(item.name() + ('' if item.is_active else ' *'), 
                                     lambda i=item: set_and_open_student(gb,i))
         set_score_one_entry_options(gb)
@@ -104,7 +104,7 @@ def set_gradeable_options(gb):
     m_gradeable.options = []
     m_gradeable.add_option("Return to Gradebook", m_gradeable.close)
     m_gradeable.add_option("Add Graded Item", lambda : app.add_gradeable(gb))
-    for item in gb.gradeables:
+    for item in sorted(gb.gradeables, key=lambda i: i.name):
         m_gradeable.add_option("{0:s}".format(item.name), 
                 lambda i=item: set_gradeable_open_gradeable_edit_del(gb, i))
         set_score_all_options(gb)
@@ -124,13 +124,13 @@ def set_gradeable_edit_del_options(gb):
 def set_score_all_options(gb):
     m_score_all.options=[]
     m_score_all.add_option("Return to Gradebook", m_score_all.close)
-    for item in gb.gradeables:
+    for item in sorted(gb.gradeables, key=lambda i: i.name):
         m_score_all.add_option(item.name, lambda i=item: app.input_scores(gb,i))
 
 def set_score_one_options(gb):
     m_score_one.options=[]
     m_score_one.add_option("Return to Gradebook", m_score_one.close)
-    for item in gb.gradeables:
+    for item in sorted(gb.gradeables, key=lambda i: i.name):
         m_score_one.add_option(item.name, \
                 lambda i=item: set_gradeable_open_score_one_entry(gb, i))
 
@@ -138,7 +138,7 @@ def set_score_one_entry_options(gb):
     m_score_one_entry.options=[]
     m_score_one_entry.add_option("Return to Student List", \
             m_score_one_entry.close)
-    for item in gb.students:
+    for item in sorted(gb.get_actives(), key=lambda i: i.name()):
         m_score_one_entry.add_option(item.name(), \
                 lambda i=item: app.input_student_scores(gb,i))
 
@@ -160,7 +160,7 @@ def set_reports_gradeable_sel_options(gb):
     m_reports_gradeable_sel.options = []
     m_reports_gradeable_sel.add_option("Return to Report Menu", \
             m_reports_gradeable_sel.close)
-    for item in gb.gradeables_with_scores():
+    for item in sorted(gb.gradeables_with_scores(), key=lambda i: i.name):
         m_reports_gradeable_sel.add_option(item.name, \
                 lambda i=item : set_and_open_reports_gradeable(gb,i))
     set_reports_gradeable_options(gb)
@@ -169,7 +169,7 @@ def set_reports_student_sel_options(gb):
     m_reports_student_sel.options = []
     m_reports_student_sel.add_option("Return to Report Menu", \
             m_reports_student_sel.close)
-    for item in gb.get_actives():
+    for item in sorted(gb.get_actives(), key=lambda i: i.name()):
         m_reports_student_sel.add_option(item.name(), \
                 lambda i=item : set_and_open_reports_student(gb,i))
     set_reports_student_options(gb)

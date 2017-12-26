@@ -37,7 +37,7 @@ Entering scores is pretty simple and optimized for speed.  Normally you will wan
 
 If you make an invalid entry, such as a typo, or entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.  You will also receive an audible and printed warning if you try to go past the end of the list, or go back before the beginning.
 
-The reporting capabilities (in progress) will include the following:
+The reporting capabilities include the following:
 
 * Graded Item Details: This has one row for each active student and a column for each question on the graded item along with total and percent columns.  The rows are sorted by total so it is easy to see which students are struggling.  An average row is provided at the bottom so you can see which problems were more difficult. 
 * Class Details: This has a similar format to the graded items report, but instead of showing columns for individual questions, shows the total score as a column for each graded item.

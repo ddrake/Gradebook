@@ -395,9 +395,9 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
     if send_email:
         g = gmail.Gmail("Current Est. Grade", '')
         signature = g.signature 
-        g.body = salutation + grade_info + signature
+        g.body = salutation + grade_info + '\n\n' + signature
         print(student.email)
-        print(salutation + grade_info + signature)
+        print(g.body)
         g.recipients = [student.email]
         g.send()
     else:
@@ -419,7 +419,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
     student_summary_line_body(student, grade, cats, pcts, send_email) 
     input("Press <Enter>")
 
-# Display or Email current grade status to all students
+# Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):
     cats = gb.categories_with_scores()
     if len(cats) == 0:
@@ -435,7 +435,7 @@ def rpt_class_summary_line(gb, send_email=False):
     grades = (pcts*adj_weights).sum(1)
     for i in range(n):
         student = students[i]
-        rpt_student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
+        student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
     input("Press <Enter>")
 
 def save_and_exit(gb):

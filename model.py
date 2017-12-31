@@ -7,19 +7,18 @@ class Course:
         self.gradeables = []
         self.students = []
         self.actives = None
-        self.scores = []
+        self.scores = {}
         self.cur_student = None
         self.cur_gradeable = None
         self.cur_category = None
     
     def get_score(self, student, gradeable, question):
-        q = gradeable.get_question(question)
-        for s in self.scores:
-            if s.student is student and s.gradeable is gradeable \
-                    and s.question is question:
-                return s
-        s = Score(student, gradeable, question)
-        self.scores.append(s)
+        key = (student, gradeable, question)
+        if key in self.scores.keys():
+            return self.scores[key]
+        else:
+            s = Score(student, gradeable, question)
+            self.scores[key] = s
         return s
 
     # Set the current student, gradeable, or category for a menu action
@@ -38,32 +37,29 @@ class Course:
         return self.actives
 
     def remove_student(self, student):
-        self.scores = [score for score in self.scores if score.student != student]
+        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if student is k[0]])
         self.students.remove(student)
         self.cur_student = None
         self.actives = None
 
     def remove_gradeable(self, gradeable):
-        self.scores = [score for score in self.scores \
-                if score.gradeable != gradeable]
+        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if gradeable is k[1]])
         self.gradeables.remove(gradeable);
         self.cur_gradeable = None
 
     def remove_category(self, category):
-        self.scores = [score for score in self.scores \
-                if score.gradeable.category != category]
-        self.gradeables = [gradeable for gradeable in self.gradeables \
-                if gradeable.category != category]
+        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if category is k[1].category])
+        self.gradeables = [g for g in self.gradeables if not g.category is category]
         self.categories.remove(category)
         self.cur_category = None
 
     def categories_with_scores(self):
         return [c for c in self.categories \
-                if any(s for s in self.scores if s.gradeable.category is c and s.value > 0.0)]
+                if any(k for k,v in self.scores.items() if k[1].category is c and v.value > 0.0)]
 
     def gradeables_with_scores(self):
         return [g for g in self.gradeables \
-                if any(s for s in self.scores if s.gradeable is g and s.value > 0.0)]
+                if any(k for k,v in self.scores.items() if k[1] is g and v.value > 0.0)]
 
     # The name of the associated JSON file for the course
     def file_name(self):

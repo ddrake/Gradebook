@@ -52,7 +52,6 @@ def course_from_dict(course):
     categories = []
     gradeables = []
     students = []
-    scores = []
     for cd in course['categories']:
         category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'])
         category_dict[cd['id']]['obj'] = category
@@ -74,9 +73,10 @@ def course_from_dict(course):
             gradeable.questions.append(question)
     course_obj.gradeables = gradeables
     for sd in course['scores']:
-        score = Score(student_dict[sd['sid']]['obj'], gradeable_dict[sd['gid']]['obj'], \
-                question_dict[(sd['gid'],sd['qid'])]['obj'], sd['value'])
-        scores.append(score)
-    course_obj.scores = scores
+        student = student_dict[sd['sid']]['obj']
+        gradeable = gradeable_dict[sd['gid']]['obj']
+        question = question_dict[(sd['gid'],sd['qid'])]['obj']
+        score = Score(student, gradeable, question, sd['value'])
+        course_obj.scores[(student, gradeable, question)] = score
     return course_obj
 

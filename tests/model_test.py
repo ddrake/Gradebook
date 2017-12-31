@@ -14,6 +14,7 @@ def setup():
     gb.categories.append(mid1)
     quiz1 = Gradeable(gb, 'Quiz1', quizzes, 15)
     quiz2 = Gradeable(gb, 'Quiz2', quizzes, 15)
+    quiz3 = Gradeable(gb, 'Quiz3', quizzes, 15)
     exam1 = Gradeable(gb, 'Exam1', mid1, 15)
     exam1_retake = Gradeable(gb, 'Exam1 Retake', mid1, 15, sub_pct=50.0)
     for i in range(3):
@@ -23,6 +24,7 @@ def setup():
         exam1_retake.add_question(5)
     gb.gradeables.append(quiz1)
     gb.gradeables.append(quiz2)
+    gb.gradeables.append(quiz3)
     gb.gradeables.append(exam1)
     gb.gradeables.append(exam1_retake)
 
@@ -72,3 +74,23 @@ def test_midterm_retake_correct():
     assert mid1.combined_score(mary) == 13.5
     assert mid1.combined_possible() == 15
 
+def test_removing_a_student():
+    gb = setup()
+    quizzes = gb.categories[0]
+    joe = gb.students[0]
+    mary = gb.students[1]
+    assert quizzes.combined_score(joe) == 24
+    assert quizzes.combined_score(mary) == 15
+    assert quizzes.combined_possible() == 30
+    assert len(gb.scores) == 24
+    gb.remove_student(joe)
+    assert len(gb.students) == 1
+    assert quizzes.combined_score(mary) == 15
+    assert len(gb.scores) == 12
+
+def test_gradeables_with_scores():
+    gb = setup()
+    assert len(gb.gradeables_with_scores()) == 4
+    quiz2 = gb.gradeables[1]
+    gb.remove_gradeable(quiz2)
+    assert len(gb.gradeables_with_scores()) == 3

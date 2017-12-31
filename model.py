@@ -37,18 +37,21 @@ class Course:
         return self.actives
 
     def remove_student(self, student):
-        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if student is k[0]])
+        for k in [k for k in self.scores.keys()]: 
+            if student is k[0]: self.scores.pop(k,None)
         self.students.remove(student)
         self.cur_student = None
         self.actives = None
 
     def remove_gradeable(self, gradeable):
-        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if gradeable is k[1]])
+        for k in [k for k in self.scores.keys()]:
+            if gradeable is k[1]: self.scores.pop(k,None)
         self.gradeables.remove(gradeable);
         self.cur_gradeable = None
 
     def remove_category(self, category):
-        map(lambda x: self.scores.pop(x,None), [k for k in self.scores.keys() if category is k[1].category])
+        for k in [k for k in self.scores.keys()]: 
+            if category is k[1].category: self.scores.pop(k,None)
         self.gradeables = [g for g in self.gradeables if not g.category is category]
         self.categories.remove(category)
         self.cur_category = None

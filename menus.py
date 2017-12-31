@@ -44,7 +44,7 @@ def set_and_open_student(gb,student):
 
 def set_and_open_reports_gradeable(gb, gradeable):
     gb.set_cur_gradeable(gradeable)
-    # m_reports_gradeable.open() // currently only one item in the menu
+    # currently only one report in this category so open it directly
     app.rpt_graded_item_details(gb)
     
 def set_and_open_reports_student(gb, student):

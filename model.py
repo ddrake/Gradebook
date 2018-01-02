@@ -64,7 +64,7 @@ class Course:
         self.categories.remove(category)
         self.cur_category = None
 
-    # todo: consider caching these
+    # Most items will have scores, so the 'any' should make these efficient
     def categories_with_scores(self):
         return [c for c in self.categories \
                 if any(k for k,v in self.scores.items() if k[1].category is c and v.value > 0.0)]

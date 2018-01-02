@@ -51,7 +51,7 @@ def course_from_dict(course_dict):
         category_dict[cd['id']]['obj'] = category
         course_obj.categories.append(category)
     for sd in course_dict['students']:
-        student = Student(sd['first'], sd['last'], sd['email'])
+        student = Student(course_obj, sd['first'], sd['last'], sd['email'])
         student_dict[sd['id']]['obj'] = student
         course_obj.students.append(student)
     for gd in course_dict['gradeables']:

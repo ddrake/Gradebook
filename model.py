@@ -34,10 +34,10 @@ class Course:
     def set_cur_category(self, category):
         self.cur_category = category
 
-    def get_actives(self):
-        if self.actives == None:
-            self.actives = [s for s in self.students if s.is_active]
-        return self.actives
+    def add_student(self, first, last, email):
+        if not any(s for s in self.students 
+                if (s.first == first and s.last == last) or s.email == email):
+            self.students.append(Student(self, first, last, email))
 
     def remove_student(self, student):
         for k in [k for k in self.scores.keys()]: 
@@ -45,6 +45,11 @@ class Course:
         self.students.remove(student)
         self.cur_student = None
         self.actives = None
+
+    def get_actives(self):
+        if self.actives == None:
+            self.actives = [s for s in self.students if s.is_active]
+        return self.actives
 
     def remove_gradeable(self, gradeable):
         for k in [k for k in self.scores.keys()]:
@@ -59,6 +64,7 @@ class Course:
         self.categories.remove(category)
         self.cur_category = None
 
+    # todo: consider caching these
     def categories_with_scores(self):
         return [c for c in self.categories \
                 if any(k for k,v in self.scores.items() if k[1].category is c and v.value > 0.0)]
@@ -67,29 +73,32 @@ class Course:
         return [g for g in self.gradeables \
                 if any(k for k,v in self.scores.items() if k[1] is g and v.value > 0.0)]
 
+    def students_with_scores(self):
+        return [s for s in self.students \
+                if any(k for k,v in self.scores.items() if k[0] is s and v.value > 0.0)]
+
     # The name of the associated JSON file for the course
     def file_name(self):
         return self.name.replace(' ','_') + "_" \
                + self.term.replace(' ','_') + ".json"
 
-    def add_student(self, first, last, email):
-        if not any(s for s in self.students 
-                if (s.first == first and s.last == last) or s.email == email):
-            self.students.append(Student(first, last, email))
-
 class Student:
-    def __init__(self, first = '', last = '', email = '', is_active=1):
+    def __init__(self, course, first = '', last = '', email = '', is_active=1):
+        self.course = course
         self.first = first
         self.last = last
         self.email = email
         self.is_active = is_active
-       
+
     def name(self):
         return self.first + (' {0:s}.'.format(self.last[0]) if self.last else '')
 
     def fullname(self):
         return self.first + ' ' + self.last
         
+    def has_scores(self):
+        return self in self.course.students_with_scores()
+
 class Question:
     def __init__(self, gradeable, points):
         self.gradeable = gradeable
@@ -97,9 +106,9 @@ class Question:
 
 class Category:
     def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0):
+        self.course = course
         self.name = name
         self.pct_of_grade = pct_of_grade
-        self.course = course
         self.drop_low_n = drop_low_n 
 
     def combined_pct(self, student):

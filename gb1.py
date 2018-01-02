@@ -10,6 +10,16 @@ import persist
 from ui_helper import *
 import menus
 import gmail
+
+#--------------------
+# Course Management
+#--------------------
+def edit_course(gb):
+    name = get_string("Enter Course Name", gb.name)
+    term = get_string("Enter Quarter", gb.term)
+    gb.name = name
+    gb.term = term
+
 #--------------------
 # Category Management
 #--------------------
@@ -37,21 +47,6 @@ def delete_category(gb):
 #-------------------
 # Student Management
 #-------------------
-def import_students(gb):
-    try:
-        with open('students.txt','r') as f:
-            text = f.read()
-        lines = text.rstrip().split('\n')
-        for line in lines:
-            first, last, email = line.split('\t')
-            gb.add_student(first, last, email)
-        gb.students.sort(key=lambda s : s.name())
-        gb.actives = None
-        menus.set_student_options(gb)
-    except:
-        print("The file 'students.txt' could not be found or was incorrectly formatted")
-    input("Press <Enter> to continue...")
-
 def add_student(gb):
     first = get_string("Enter First Name")
     last = get_string("Enter Last Name")
@@ -81,46 +76,24 @@ def delete_student(gb):
     menus.set_student_options(gb)
     menus.m_student_edit_del.close()
 
-def edit_course(gb):
-    name = get_string("Enter Course Name", gb.name)
-    term = get_string("Enter Quarter", gb.term)
-    gb.name = name
-    gb.term = term
+def import_students(gb):
+    try:
+        with open('students.txt','r') as f:
+            text = f.read()
+        lines = text.rstrip().split('\n')
+        for line in lines:
+            first, last, email = line.split('\t')
+            gb.add_student(first, last, email)
+        gb.students.sort(key=lambda s : s.name())
+        gb.actives = None
+        menus.set_student_options(gb)
+    except:
+        print("The file 'students.txt' could not be found or was incorrectly formatted")
+    input("Press <Enter> to continue...")
 
 #---------------------
 # Gradeable Management
 #---------------------
-def import_scores(gb):
-    if gb.cur_gradeable.has_scores():
-        print("Delete existing scores? (Y/N)")
-        resp = input(">>> ")
-        if resp.upper() != 'Y':
-            return
-        gb.cur_gradeable.delete_scores()
-    try:
-        with open('scores.txt','r') as f:
-            text = f.read()
-        lines = text.strip().split('\n')
-        for line in lines:
-            email, q1_score = line.split('\t')
-            matches = [s for s in gb.students if s.email == email]
-            if len(matches) == 0:
-                print("imported email '", email, "' doesn't match any student")
-                continue
-            if len(matches) > 1:
-                print("imported email '", email, "' matches more than one student???")
-                continue
-            student = matches[0]
-            score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
-            score.value = float(q1_score)
-        menus.set_reports_gradeable_sel_options(gb)
-        menus.set_reports_student_sel_options(gb)
-    except Exception as err:
-        print("The file 'scores.txt' could not be found or was incorrectly formatted")
-        print(err)
-    finally:
-        input("Press <Enter> to continue...")
-
 def add_gradeable(gb):
     name = get_string("Enter Graded Item Name")
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
@@ -166,6 +139,38 @@ def delete_gradeable(gb):
     gb.remove_gradeable(gb.cur_gradeable)
     menus.set_gradeable_options(gb)
     menus.m_gradeable_edit_del.close()
+
+def import_scores(gb):
+    if gb.cur_gradeable.has_scores():
+        print("Delete existing scores? (Y/N)")
+        resp = input(">>> ")
+        if resp.upper() != 'Y':
+            return
+        gb.cur_gradeable.delete_scores()
+    try:
+        with open('scores.txt','r') as f:
+            text = f.read()
+        lines = text.strip().split('\n')
+        for line in lines:
+            email, q1_score = line.split('\t')
+            matches = [s for s in gb.students if s.email == email]
+            if len(matches) == 0:
+                print("imported email '", email, "' doesn't match any student")
+                continue
+            if len(matches) > 1:
+                print("imported email '", email, "' matches more than one student???")
+                continue
+            student = matches[0]
+            score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
+            score.value = float(q1_score)
+        menus.set_reports_gradeable_sel_options(gb)
+        menus.set_reports_student_sel_options(gb)
+    except Exception as err:
+        print("The file 'scores.txt' could not be found or was incorrectly formatted")
+        print(err)
+    finally:
+        input("Press <Enter> to continue...")
+
 #------------
 # Score Entry
 #------------
@@ -196,7 +201,6 @@ def input_score(gb, st_idx, q_idx):
         s = gb.students[st_idx]
         q = cg.questions[q_idx]
         score = gb.get_score(s, cg, q)
-
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})".format(cg.name, \
                 s.name(), q_idx+1, score.value))
         value = input(" >> ")
@@ -275,7 +279,6 @@ def input_student_score(gb, q_idx):
 #--------
 # Reports
 #--------
-
 def plot_hist(pcts, title):
     h=np.histogram(pcts,bins=(0,60,70,80,90,100))
     barlist = plt.bar(range(5),h[0],width=0.85)

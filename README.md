@@ -37,6 +37,8 @@ Entering scores is pretty simple and optimized for speed.  Normally you will wan
 
 If you make an invalid entry, such as a typo, or entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.  You will also receive an audible and printed warning if you try to go past the end of the list, or go back before the beginning.
 
+If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall webassign total can be imported into an existing graded item with a single question representing the total possible points.
+
 The reporting capabilities include the following:
 
 * Graded Item Details: This has one row for each active student and a column for each question on the graded item along with total and percent columns.  The rows are sorted by total so it is easy to see which students are struggling.  An average row is provided at the bottom so you can see which problems were more difficult. 
@@ -46,3 +48,4 @@ The reporting capabilities include the following:
 
 A histogram with letter grade bins pops up for each of the first three reports.
 
+A schema version number is now stored in the json course file.  If the gradebook application schema number is greater than that of the data file being loaded, a sequence of schema migrations will be automatically performed to bring the data file up to the current schema.  The file saved on exit will have the same schema number as that of the application being run.

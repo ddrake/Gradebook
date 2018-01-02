@@ -96,6 +96,9 @@ def get_space_separated_floats(title, default=None, prompt=" >> "):
             say("What?")
             print("What?")
 
+def pause(msg=''):
+    input((msg+'  ' if msg else '') + "Press <Enter> to Continue. ")
+
 # Give an audible warning
 def say(phrase):
     subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])

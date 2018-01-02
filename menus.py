@@ -61,9 +61,9 @@ def set_category_options(gb):
     for item in sorted(gb.categories, key=lambda i: i.name):
         m_category.add_option("{0:s} ({1:.1f})".format(item.name, item.pct_of_grade), 
                                     lambda i=item: set_and_open_category_edit_del(gb,i))
-        set_score_all_options(gb)
-        set_score_one_options(gb)
-        set_gradeable_options(gb)
+    set_score_all_options(gb)
+    set_score_one_options(gb)
+    set_gradeable_options(gb)
 
 def set_category_edit_del_options(gb):
     m_category_edit_del.options = []
@@ -83,8 +83,8 @@ def set_student_options(gb):
         label = "{0:s}{1:s}{2:s}".format(item.name(), ('' if item.is_active else ' *'), \
                 ('' if item.has_scores() else ' (No scores)'))
         m_student.add_option(label, lambda i=item: set_and_open_student(gb,i))
-        set_score_one_entry_options(gb)
-        set_reports_student_sel_options(gb)
+    set_score_one_entry_options(gb)
+    set_reports_student_sel_options(gb)
 
 def set_student_edit_del_options(gb):
     m_student_edit_del.options = []
@@ -109,9 +109,9 @@ def set_gradeable_options(gb):
         label = "{0:s}{1:s}".format(item.name, ('' if item.has_scores() else ' (No scores)'))
         m_gradeable.add_option(label, \
                 lambda i=item: set_gradeable_open_gradeable_edit_del(gb, i))
-        set_score_all_options(gb)
-        set_score_one_options(gb)
-        set_reports_gradeable_sel_options(gb)
+    set_score_all_options(gb)
+    set_score_one_options(gb)
+    set_reports_gradeable_sel_options(gb)
 
 def set_gradeable_edit_del_options(gb):
     m_gradeable_edit_del.options = []

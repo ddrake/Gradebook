@@ -89,12 +89,15 @@ def import_students(gb):
         menus.set_student_options(gb)
     except:
         print("The file 'students.txt' could not be found or was incorrectly formatted")
-    input("Press <Enter> to continue...")
-
+    pause()
 #---------------------
 # Gradeable Management
 #---------------------
 def add_gradeable(gb):
+    if not gb.categories:
+        print("Can't create a graded item until there is at least one category.")
+        pause()
+        return
     name = get_string("Enter Graded Item Name")
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
     category = gb.categories[cat-1]
@@ -169,8 +172,7 @@ def import_scores(gb):
         print("The file 'scores.txt' could not be found or was incorrectly formatted")
         print(err)
     finally:
-        input("Press <Enter> to continue...")
-
+        pause()
 #------------
 # Score Entry
 #------------
@@ -327,13 +329,12 @@ def rpt_graded_item_details(gb):
     print("{0:.1f}".format(pcts.mean()).rjust(total_col_width))
     print('')
     print('')
-    input("Press <Enter>")
-
+    pause()
 
 def rpt_class_detail(gb):
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
     if len(gradeables) == 0:
-        input("No Graded Items with Scores - <Enter> to continue")
+        pause(msg="No Graded Items with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
     gnames = [g.name for g in gradeables]
@@ -366,12 +367,12 @@ def rpt_class_detail(gb):
     print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
     print('')
     print('')
-    input("Press <Enter>")
+    pause()
 
 def rpt_class_summary(gb):
     cats = gb.categories_with_scores()
     if len(cats) == 0:
-        input("No categories with Scores - <Enter> to continue")
+        pause(msg="No categories with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
@@ -402,7 +403,7 @@ def rpt_class_summary(gb):
     print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
     print('')
     print('')
-    input("Press <Enter>")
+    pause()
 
 def student_summary_line_body(student, grade, cats, pcts, send_email):
     name_col_width = 16
@@ -437,7 +438,7 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
 def rpt_student_summary_line(gb, send_email=False, stud=None):
     cats = gb.categories_with_scores()
     if len(cats) == 0:
-        input("No categories with Scores - <Enter> to continue")
+        pause("No categories with Scores.")
         return
     student = stud if stud != None else gb.cur_student
     pcts = np.array([c.combined_pct(student) for c in cats])
@@ -445,7 +446,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
     adj_weights = weights/sum(weights)
     grade = (pcts*adj_weights).sum()
     student_summary_line_body(student, grade, cats, pcts, send_email) 
-    input("Press <Enter>")
+    pause()
 
 # Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):
@@ -456,7 +457,7 @@ def rpt_class_summary_line(gb, send_email=False):
             return
     cats = gb.categories_with_scores()
     if len(cats) == 0:
-        input("No categories with Scores - <Enter> to continue")
+        pause(msg="No categories with Scores.")
         return
     students = gb.get_actives()
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
@@ -467,7 +468,7 @@ def rpt_class_summary_line(gb, send_email=False):
     for i in range(n):
         student = students[i]
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
-    input("Press <Enter>")
+    pause()
 
 def save_and_exit(gb):
     persist.save(gb, gb.file_name())

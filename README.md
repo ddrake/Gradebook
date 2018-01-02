@@ -2,7 +2,7 @@
 ## Simple command-line application for quickly setting up a course to teach, recording student scores and viewing reports.
 
 At this point the application has only been tested on Linux Mint 17 and 18. It requires Python 3.x.
-The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Of course, you will also want to have numpy installed for python3.
+The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/Menu/).  Install that via "pip3 install --user Menu".  Of course, you will also want to have numpy installed for python3.  
 
 All data for a course is stored in a single JSON file, which is written when you 'Save' or 'Quit'.  The top level 'Course' object has properties for the course name and the term.  The JSON file is named by a concatenation of these. A Course contains lists of Categories, Graded Items and Students and a dictionary of Scores.  
 
@@ -34,7 +34,7 @@ To set up a new course, first select 'Edit Course' to change the Course name and
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file with no header and columns in that order named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted.
 
 #### Categories
 
@@ -66,10 +66,14 @@ The reporting capabilities include the following:
 * Graded Item Details: This has one row for each active student and a column for each question on the graded item along with total and percent columns.  The rows are sorted by total so it is easy to see which students are struggling.  An average row is provided at the bottom so you can see which problems were more difficult. 
 * Class Details: This has a similar format to the graded items report, but instead of showing columns for individual questions, shows the total score as a column for each graded item.
 * Class Summary: This groups the graded items into categories and displays the weight for each category.  Unlike the Graded Item Details and Class Details reports, this report is able to apply the special summarization features, such as dropping the lowest quiz or combining the midterm scores with the retake scores.
-* Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.  All you need to do to make this work is rename the file 'gmail_credentials.txt.sample' to 'gmail_credentials.txt' and edit it to include your personal gmail account information and signature.
+* Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.  All you need to do to make this work is rename the file 'gmail_credentials.txt.sample' to 'gmail_credentials.txt', edit it to include your personal gmail account information and signature, and move it to the application directory.
 
 A histogram with letter grade bins pops up for each of the first three reports.
 
 ### Course Data Schema
 
 A schema version number is now stored in the JSON course file.  If the gradebook application schema number is greater than that of the data file being loaded, a sequence of schema migrations will be automatically performed to bring the data file up to the current schema.  The file saved on exit will have the same schema number as that of the application being run.
+
+### Contributing
+
+I've designed this application primarily to suit my preferences as an instructor.  If there are other features that you would like included, please feel free to fork this repository and add them.  If you add a feature or bug fix that you think might be useful for others, you're welcome to submit a pull request.

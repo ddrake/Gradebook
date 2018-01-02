@@ -56,9 +56,7 @@ def add_student(gb):
     first = get_string("Enter First Name")
     last = get_string("Enter Last Name")
     email = get_string("Enter Email")
-    is_active = get_bool("Is the Student Active? (y/n)", 1)
-    student = Student(first, last, email, is_active)
-    gb.students.append(student)
+    gb.add_student(first, last, email)
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None
     menus.set_student_options(gb)

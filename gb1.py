@@ -127,7 +127,6 @@ def edit_gradeable(gb):
             cg.total_pts if prev_tot == sum(fpts) else sum(fpts) - bonus)
     else:
         print("Question points: ", pts)
-        #print("Question points: " + " ".join("{0:.1f}".format(p) for p in pts))
         total_pts = get_valid_float("Total Points", prev_tot/2, prev_tot, cg.total_pts)
     sub_pct = get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
     added_pts = get_valid_float("Added Points", 0, 10000, cg.added_pts)

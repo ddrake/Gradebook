@@ -85,11 +85,11 @@ def delete_student(gb):
 #------------------
 # Course Management
 #------------------
-def add_course(gb):
-    first = get_string("Enter Course Name (e.g. Math 251)")
-    last = get_string("Enter Quarter (e.g. W18")
-    gb.students.append(student)
-    menus.set_student_options(gb)
+#def add_course(gb):
+#    first = get_string("Enter Course Name (e.g. Math 251)")
+#    last = get_string("Enter Quarter (e.g. W18")
+#    gb.students.append(student)
+#    menus.set_student_options(gb)
 
 def edit_course(gb):
     name = get_string("Enter Course Name", gb.name)

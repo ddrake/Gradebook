@@ -1,8 +1,11 @@
+schema_version = 1
 
 class Course:
     def __init__(self, name = '', term = ''):
+        global schema_version
         self.name = name
         self.term = term
+        self.schema_version = schema_version
         self.categories = []
         self.gradeables = []
         self.students = []

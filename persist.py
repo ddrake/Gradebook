@@ -13,7 +13,7 @@ def save(gb, file_name):
 
 # transfer all data in the course object hierarchy to a dictionary
 def course_to_dict(gb):
-    course = {'name': gb.name, 'term': gb.term, 'gradeables':[], 'scores':[]}
+    course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, 'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
             'drop_low_n': c.drop_low_n, 'obj': c} for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, 'email': s.email, 'obj': s} \
@@ -34,6 +34,10 @@ def course_to_dict(gb):
 
 # construct the course object hierarchy from a dictionary
 def course_from_dict(course_dict):
+    global schema_version
+    while not 'schema_version' in course_dict or course_dict['schema_version'] < schema_version:
+        upgrade(course_dict)
+
     # id-keyed dicts for reconstructing scores
     category_dict = {item['id'] : item for item in course_dict['categories']}
     gradeable_dict = {item['id'] : item for item in course_dict['gradeables']}
@@ -67,4 +71,12 @@ def course_from_dict(course_dict):
         score = Score(student, gradeable, question, sd['value'])
         course_obj.scores[(student, gradeable, question)] = score
     return course_obj
+
+def upgrade(course_dict):
+    if not 'schema_version' in course_dict:
+        course_dict['schema_version'] = 1
+        print("upgraded schema to version 1")
+    elif course_dict['schema_version'] == 1:
+        # upgrade from version 1 to version 2
+        pass
 

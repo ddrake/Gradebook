@@ -117,6 +117,7 @@ def set_gradeable_edit_del_options(gb):
             m_gradeable_edit_del.close)
     m_gradeable_edit_del.add_option("Edit", lambda : app.edit_gradeable(gb))
     m_gradeable_edit_del.add_option("Delete", lambda : app.delete_gradeable(gb))
+    m_gradeable_edit_del.add_option("Import Question 1 Scores", lambda : app.import_scores(gb))
 
 #------------------------
 # score entry menu logic

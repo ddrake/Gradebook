@@ -72,6 +72,11 @@ class Course:
         return self.name.replace(' ','_') + "_" \
                + self.term.replace(' ','_') + ".json"
 
+    def add_student(self, first, last, email):
+        if not any(s for s in self.students 
+                if (s.first == first and s.last == last) or s.email == email):
+            self.students.append(Student(first, last, email))
+
 class Student:
     def __init__(self, first = '', last = '', email = '', is_active=1):
         self.first = first
@@ -144,6 +149,10 @@ class Gradeable:
         
     def has_scores(self):
         return self in self.course.gradeables_with_scores()
+
+    def delete_scores(self):
+        for k in [k for k in self.course.scores.keys()]:
+            if self is k[1]: self.course.scores.pop(k,None)
 
 class Score:
     def __init__(self, student, gradeable, question, value = 0.0):

@@ -157,7 +157,7 @@ def import_scores(gb):
         for line in lines:
             email, q1_score = line.split('\t')
             matches = [s for s in gb.students if s.email == email]
-            if len(matches) == 0:
+            if not matches:
                 print("imported email '", email, "' doesn't match any student")
                 continue
             if len(matches) > 1:
@@ -333,7 +333,7 @@ def rpt_graded_item_details(gb):
 
 def rpt_class_detail(gb):
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
-    if len(gradeables) == 0:
+    if not gradeables:
         pause(msg="No Graded Items with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
@@ -371,7 +371,7 @@ def rpt_class_detail(gb):
 
 def rpt_class_summary(gb):
     cats = gb.categories_with_scores()
-    if len(cats) == 0:
+    if not cats:
         pause(msg="No categories with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
@@ -437,7 +437,7 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
 # Display or Email current grade status to a single student
 def rpt_student_summary_line(gb, send_email=False, stud=None):
     cats = gb.categories_with_scores()
-    if len(cats) == 0:
+    if not cats:
         pause("No categories with Scores.")
         return
     student = stud if stud != None else gb.cur_student
@@ -456,7 +456,7 @@ def rpt_class_summary_line(gb, send_email=False):
         if resp.upper() != 'Y':
             return
     cats = gb.categories_with_scores()
-    if len(cats) == 0:
+    if not cats:
         pause(msg="No categories with Scores.")
         return
     students = gb.get_actives()

@@ -104,12 +104,9 @@ def add_gradeable(gb):
     name = get_string("Enter Graded Item Name")
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
     category = gb.categories[cat-1]
-    total_pts = get_valid_float("Total Points", 0, 10000)
-    fpts = get_space_separated_floats("Enter question point values separated by whitespace", total_pts)
-    sub_pct = get_valid_float("Retake Sub-percent", 0, 100, 0.0)
-    added_pts = get_valid_float("Added Points", 0, 10000, 0.0)
-    added_pct = get_valid_float("Added Percent", 0, 100, 0.0)
-    gradeable = Gradeable(gb, name, category, total_pts, sub_pct, added_pts, added_pct)
+    fpts = get_space_separated_floats("Enter question point values separated by whitespace")
+    total_pts = get_valid_float("Total Points", sum(fpts)/2, sum(fpts), sum(fpts))
+    gradeable = Gradeable(gb, name, category, total_pts)
     questions = [Question(gradeable, p) for p in fpts]
     gradeable.questions = questions
     gb.gradeables.append(gradeable)
@@ -117,16 +114,21 @@ def add_gradeable(gb):
 
 def edit_gradeable(gb):
     cg = gb.cur_gradeable
-    has_scores = any(s for s in gb.scores if s.gradeable is cg)
     name = get_string("Enter Graded Item Name", cg.name)
     def_sel = gb.categories.index(cg.category) + 1
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories], def_sel )
     category = gb.categories[cat-1]
-    total_pts = get_valid_float("Total Points", 0, 10000, cg.total_pts)
-    if not has_scores:
-        pts = [q.points for q in cg.questions]
-        fpts = get_space_separated_floats("Enter question point values separated by whitespace", \
-                total_pts, pts)
+    pts = [q.points for q in cg.questions]
+    prev_tot = sum(pts)
+    bonus = prev_tot - cg.total_pts
+    if not cg.has_scores():
+        fpts = get_space_separated_floats("Enter question point values separated by whitespace", pts)
+        total_pts = get_valid_float("Total Points", sum(fpts)/2.0, sum(fpts), \
+            cg.total_pts if prev_tot == sum(fpts) else sum(fpts) - bonus)
+    else:
+        print("Question points: ", pts)
+        #print("Question points: " + " ".join("{0:.1f}".format(p) for p in pts))
+        total_pts = get_valid_float("Total Points", prev_tot/2, prev_tot, cg.total_pts)
     sub_pct = get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
     added_pts = get_valid_float("Added Points", 0, 10000, cg.added_pts)
     added_pct = get_valid_float("Added Percent", 0, 100, cg.added_pct)
@@ -136,7 +138,7 @@ def edit_gradeable(gb):
     cg.sub_pct = sub_pct
     cg.added_pts = added_pts
     cg.added_pct = added_pct
-    if not has_scores:
+    if not cg.has_scores():
         cg.questions = [Question(cg, p) for p in fpts]
     menus.set_gradeable_options(gb)
 
@@ -350,10 +352,8 @@ def rpt_class_summary(gb):
         return
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
-    ar = np.array([[c.combined_score(s) for c in cats] for s in gb.get_actives()])
-    n,m = ar.shape
-    possibles = np.array([c.combined_possible() for c in cats])
-    pcts = ar/possibles*100.0
+    pcts = np.array([[c.combined_pct(s) for c in cats] for s in gb.get_actives()])
+    n,m = pcts.shape
     aves = pcts.mean(1)
     title="Class Summary Report"
     plot_hist(aves,title)
@@ -417,9 +417,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
         input("No categories with Scores - <Enter> to continue")
         return
     student = stud if stud != None else gb.cur_student
-    ar = np.array([c.combined_score(student) for c in cats])
-    possibles = np.array([c.combined_possible() for c in cats])
-    pcts = ar/possibles*100.0
+    pcts = np.array([c.combined_pct(student) for c in cats])
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)
     grade = (pcts*adj_weights).sum()
@@ -428,15 +426,18 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
 
 # Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):
+    if send_email:
+        print("Are you sure you want to email ALL students? (Y/N)")
+        resp = input(">>> ")
+        if resp.upper() != 'Y':
+            return
     cats = gb.categories_with_scores()
     if len(cats) == 0:
         input("No categories with Scores - <Enter> to continue")
         return
     students = gb.get_actives()
-    ar = np.array([[c.combined_score(s) for c in cats] for s in students])
-    n,m = ar.shape
-    possibles = np.array([c.combined_possible() for c in cats])
-    pcts = ar/possibles*100.0
+    pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
+    n,m = pcts.shape
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)
     grades = (pcts*adj_weights).sum(1)

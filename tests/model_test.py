@@ -57,36 +57,35 @@ def test_quiz_averages_correct():
     quizzes = gb.categories[0]
     joe = gb.students[0]
     mary = gb.students[1]
-    assert quizzes.combined_score(joe) == 24
-    assert quizzes.combined_score(mary) == 15
-    assert quizzes.combined_possible() == 30
+    assert quizzes.combined_pct(joe) == 24.0*100/30
+    assert quizzes.combined_pct(mary) == 15*100/30
     quizzes.drop_low_n = 1
-    assert quizzes.combined_score(joe) == 12
-    assert quizzes.combined_score(mary) == 15
-    assert quizzes.combined_possible() == 15
+    assert quizzes.combined_pct(joe) == 12.0*100/15
+    assert quizzes.combined_pct(mary) == 15.0*100/15
 
 def test_midterm_retake_correct():
     gb = setup()
     mid1 = gb.categories[1]
     joe = gb.students[0]
     mary = gb.students[1]
-    assert mid1.combined_score(joe) == 12
-    assert mid1.combined_score(mary) == 13.5
-    assert mid1.combined_possible() == 15
+    assert mid1.combined_pct(joe) == 12*100/15.
+    assert mid1.combined_pct(mary) == 13.5*100/15.
 
 def test_removing_a_student():
     gb = setup()
     quizzes = gb.categories[0]
     joe = gb.students[0]
     mary = gb.students[1]
-    assert quizzes.combined_score(joe) == 24
-    assert quizzes.combined_score(mary) == 15
-    assert quizzes.combined_possible() == 30
+    assert len(gb.gradeables_with_scores()) == 4
+    assert quizzes.combined_pct(joe) == 24*100/30.
+    assert quizzes.combined_pct(mary) == 15*100/30.
     assert len(gb.scores) == 24
     gb.remove_student(joe)
     assert len(gb.students) == 1
-    assert quizzes.combined_score(mary) == 15
+    assert quizzes.drop_low_n == 0
     assert len(gb.scores) == 12
+    assert len(gb.gradeables_with_scores()) == 3
+    assert quizzes.combined_pct(mary) == 15*100/15.
 
 def test_gradeables_with_scores():
     gb = setup()

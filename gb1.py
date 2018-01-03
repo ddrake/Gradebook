@@ -35,7 +35,7 @@ def edit_category(gb):
     name = get_string("Enter Category Name", gb.cur_category.name)
     pct_of_grade = get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
     gb.cur_category.drop_low_n = get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
-    gb.cur_category.name = name if name else gb.cur_category.name
+    gb.cur_category.name = name or gb.cur_category.name
     gb.cur_category.pct_of_grade = pct_of_grade
     menus.set_category_options(gb)
 
@@ -127,7 +127,7 @@ def edit_gradeable(gb):
     sub_pct = get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
     added_pts = get_valid_float("Added Points", 0, 10000, cg.added_pts)
     added_pct = get_valid_float("Added Percent", 0, 100, cg.added_pct)
-    cg.name = name if name else cg.name
+    cg.name = name or cg.name
     cg.category = category
     cg.total_pts = total_pts
     cg.sub_pct = sub_pct
@@ -365,7 +365,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
     if not cats:
         pause("No categories with Scores.")
         return
-    student = stud if stud != None else gb.cur_student
+    student = stud or gb.cur_student
     pcts = np.array([c.combined_pct(student) for c in cats])
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)

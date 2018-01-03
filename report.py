@@ -42,8 +42,8 @@ class SimpleReport:
         out += "-"*len(self.title) + "\n"
         out += self.name_col_name.ljust(self.name_col_width)
         out += "".join([h.rjust(self.data_col_width) for h in self.col_headings])
-        if not self.total_col is None: out += self.total_col_name.rjust(self.total_col_width)
-        if not self.pct_col is None: out += "Pct.".rjust(self.total_col_width)
+        if self.total_col is not None: out += self.total_col_name.rjust(self.total_col_width)
+        if self.pct_col is not None: out += "Pct.".rjust(self.total_col_width)
         out += "\n" + self.hrule(m)
         return out
  
@@ -54,9 +54,9 @@ class SimpleReport:
             out += "{0:s}".format(self.row_headings[i]).ljust(self.name_col_width)
             for j in range(m):
                 out += "{0:.1f}".format(self.data[i,j]).rjust(self.data_col_width)
-            if not self.total_col is None: 
+            if self.total_col is not None: 
                 out += "{0:.1f}".format(self.total_col[i]).rjust(self.total_col_width)
-            if not self.pct_col is None: 
+            if self.pct_col is not None: 
                 out += "{0:.1f}".format(self.pct_col[i]).rjust(self.total_col_width)
             out += "\n"
         return out
@@ -68,17 +68,17 @@ class SimpleReport:
             out += "Average".ljust(self.name_col_width)
             for j in range(m):
                 out += "{0:.1f}".format(self.data[:,j].mean()).rjust(self.data_col_width)
-            if not self.total_col is None: 
+            if self.total_col is not None: 
                 out += "{0:.1f}".format(self.total_col.mean()).rjust(self.total_col_width)
-            if not self.pct_col is None: 
+            if self.pct_col is not None: 
                 out += "{0:.1f}".format(self.pct_col.mean()).rjust(self.total_col_width)
         out += "\n\n"
         return out
 
     def hrule(self, m):
         out = "-" * (self.name_col_width + m * self.data_col_width)
-        if not self.total_col is None: out += "-" * self.total_col_width
-        if not self.pct_col is None: out += "-" * self.total_col_width
+        if self.total_col is not None: out += "-" * self.total_col_width
+        if self.pct_col is not None: out += "-" * self.total_col_width
         return out + "\n"
 
 

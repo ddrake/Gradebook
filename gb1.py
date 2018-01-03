@@ -177,99 +177,96 @@ def import_scores(gb):
 #------------
 # Score Entry
 #------------
-# Helper for input_score - starts the recursion
-def input_scores(gb,gradeable):
-    gb.set_cur_gradeable(gradeable)
-    input_score(gb, 0, 0)
-    menus.set_reports_gradeable_sel_options(gb)
-    menus.set_reports_student_sel_options(gb)
+def input_scores(gb, cg):
+    ss = gb.get_actives()
+    qs = cg.questions
+    s_idx, q_idx = 0, 0
+    s_ct, q_ct = len(ss), len(qs)
+    done = False
+    while not done:
+        s_idx, q_idx = handle_limits(s_idx, q_idx, s_ct, q_ct)
+        s, q = ss[s_idx], qs[q_idx]
+        score = gb.get_score(s, cg, q)
+        done, s_idx, q_idx = get_input(score, s, cg, q, s_idx, q_idx)
 
-def input_score(gb, st_idx, q_idx):
+def input_student_scores(gb, s):
     cg = gb.cur_gradeable
-    q_ct = len(cg.questions)
-    s_ct = len(gb.get_actives())
-    if st_idx <= 0 and q_idx < 0:
+    qs = cg.questions
+    q_idx = 0
+    q_ct = len(qs)
+    done = False
+    while not done:
+        q_idx = handle_qlimit(q_idx, q_ct)
+        q = qs[q_idx]
+        score = gb.get_score(s, cg, q)
+        done, q_idx = get_student_input(score, s, cg, q, q_idx)
+
+def handle_limits(s_idx, q_idx, s_ct, q_ct):
+    if s_idx <= 0 and q_idx < 0:
         print_say("First One")
-        input_score(gb, 0, 0)
-    elif st_idx >= s_ct - 1 and q_idx >= q_ct:
+        return 0, 0
+    elif s_idx >= s_ct - 1 and q_idx >= q_ct:
         print_say("Last One")
-        input_score(gb, s_ct-1, q_ct-1)
+        return s_ct - 1, q_ct - 1
+    elif q_idx >= q_ct:  
+        return s_idx + 1, 0
+    elif q_idx < 0:
+        return s_idx - 1, q_ct - 1
+    else: 
+        return s_idx, q_idx
+ 
+def handle_qlimit(q_idx, q_ct):
+    if q_idx < 0:
+        print_say("First One")
+        return 0
     elif q_idx >= q_ct:
-        input_score(gb,st_idx + 1, 0)
-    elif q_idx < 0:
-        input_score(gb, st_idx - 1, -1)
-    else:
-        s = gb.students[st_idx]
-        q = cg.questions[q_idx]
-        score = gb.get_score(s, cg, q)
-        print("{0:s}: {1:s}, {2:d}. ({3:.1f})".format(cg.name, \
-                s.name(), q_idx+1, score.value))
-        value = input(" >> ")
-        if value.lower() == 'q':
-            return False
-        if value.lower() == 'b':
-            input_score(gb, st_idx, q_idx-1)
-        elif value == '':
-            input_score(gb, st_idx, q_idx+1)
-        elif value.lower() == 'n':
-            input_score(gb, st_idx+1, 0)
-        elif value.lower() == 'p':
-            input_score(gb, st_idx-1, 0)
-        else:
-            try:
-                tval = float(value)
-                if tval <= q.points and tval >= 0:
-                    score.value = tval
-                    input_score(gb, st_idx, q_idx+1)
-                else:
-                    print_say("Invalid score")
-                    input_score(gb, st_idx, q_idx)
-            except ValueError:
-                print_say("What?")
-                input_score(gb, st_idx, q_idx)
-
-# Helper for input_student_score -- starts the recursion
-def input_student_scores(gb, student):
-    gb.set_cur_student(student)
-    input_student_score( gb,0 )
-    menus.set_reports_gradeable_sel_options(gb)
-    menus.set_reports_student_sel_options(gb)
-
-def input_student_score(gb, q_idx):
-    cg = gb.cur_gradeable
-    s = gb.cur_student
-    q_ct = len(cg.questions)
-
-    if q_idx >= len(cg.questions):
         print_say("Last One")
-        input_student_score(gb, q_ct - 1)
-    elif q_idx < 0:
-        print_say("First One")
-        input_student_score(gb, 0 )
+        return q_ct-1
     else:
-        q = cg.questions[q_idx]
-        score = gb.get_score(s, cg, q)
-        print("{0:s}: {1:s}, {2:d}. ({3:.1f})".format(cg.name, \
-                s.name(), q_idx+1, score.value))
-        value = input(" >> ")
+        return q_idx
+ 
+def get_input(score, s, g, q, s_idx, q_idx):
+        print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
+                .format(g.name, s.name(), q_idx+1, score.value))
+        value = input(">>> ")
         if value.lower() == 'q':
-            return False
-        if value.lower() == 'b':
-            input_student_score(gb, q_idx-1)
+            return True, s_idx, q_idx
+        elif value.lower() == 'b':
+            return False, s_idx, q_idx-1
         elif value == '':
-            input_student_score(gb, q_idx+1)
+            return False, s_idx, q_idx+1
+        elif value.lower() == 'n':
+            return False, s_idx+1, 0
+        elif value.lower() == 'p':
+            return False, s_idx-1, 0
         else:
-            try:
-                tval = float(value)
-                if tval <= q.points and tval >= 0:
-                    score.value = tval
-                    input_student_score(gb, q_idx+1)
-                else:
-                    print_say("Invalid score")
-                    input_student_score(gb, q_idx)
-            except ValueError:
-                print_say("What?")
-                input_student_score(gb, q_idx)
+            return False, s_idx, q_idx + try_set_score(score, q, value, q_idx)
+        
+def get_student_input(score, s, g, q, q_idx):
+        print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
+                .format(g.name, s.name(), q_idx+1, score.value))
+        value = input(">>> ")
+        if value.lower() == 'q':
+            return True, q_idx
+        elif value.lower() == 'b':
+            return False, q_idx-1
+        elif value == '':
+            return False, q_idx+1
+        else:
+            return False, q_idx + try_set_score(score, q, value, q_idx)
+
+def try_set_score(score, q, value, q_idx):
+    try:
+        tval = float(value)
+        if tval <= q.points and tval >= 0:
+            score.value = tval
+            return 1
+        else:
+            print_say("Invalid score")
+            return 0
+    except ValueError:
+        print_say("What?")
+        return 0
 
 #--------
 # Reports

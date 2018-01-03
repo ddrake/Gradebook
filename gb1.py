@@ -287,15 +287,15 @@ def rpt_graded_item_details(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
             for s in gb.get_actives()])
-    n,m = ar.shape
     tots = ar.sum(1)
     pcts = tots/cg.total_pts*100.0
     title="{0:s} Details".format(cg.name)
     plot_hist(pcts,title)
     totinds = tots.argsort()
     ar, names = ar[totinds,:], names[totinds]
+    m,n = ar.shape
     tots, pcts = tots[totinds], pcts[totinds]
-    col_headings = ["#{0:d}".format(j+1) for j in range(m)]
+    col_headings = ["#{0:d}".format(j+1) for j in range(n)]
     rpt = SimpleReport(title, name_col_width=16, data_col_width=6, total_col_width=8, \
             name_col_name='Student', row_headings=names, col_headings=col_headings, \
             data=ar, total_col=tots, total_col_name = "Total", \
@@ -311,7 +311,6 @@ def rpt_class_detail(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     col_headings = [g.name for g in gradeables]
     ar = np.array([[g.adjusted_score(s) for g in gradeables] for s in gb.get_actives()])
-    n,m = ar.shape
     possibles = np.array([g.total_pts for g in gradeables])
     pcts = ar/possibles*100.0
     aves = pcts.mean(1)
@@ -319,7 +318,6 @@ def rpt_class_detail(gb):
     plot_hist(aves,title)
     aveinds = aves.argsort()
     pcts, names, aves = pcts[aveinds,:], names[aveinds], aves[aveinds]
-    name_col_width, data_col_width, total_col_width = 16, 8, 8
     rpt = SimpleReport(title, name_col_width=16, data_col_width=8, total_col_width=8, \
             name_col_name='Student', row_headings=names, col_headings=col_headings, \
             data=pcts, total_col=aves, total_col_name="Avg.", has_average_row=True)
@@ -334,7 +332,6 @@ def rpt_class_summary(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in gb.get_actives()])
-    n,m = pcts.shape
     aves = pcts.mean(1)
     title="Class Summary Report"
     plot_hist(aves,title)
@@ -356,10 +353,10 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
         salutation = "{0:s}".format(student.name()).ljust(name_col_width)
 
     grade_info = "Current Est. Grade: {0:.1f} based on: ".format(grade)
-    m = len(cats)
-    for j in range(m):
+    n = len(cats)
+    for j in range(n):
         cat = cats[j]
-        punct = ', ' if j < m - 1 else '.'
+        punct = ', ' if j < n - 1 else '.'
         grade_info += "{0:s} (weighted {1:.0f}%): {2:.1f}%{3:s}" \
                 .format(cat.name, cat.pct_of_grade, pcts[j], punct)
     if send_email:
@@ -404,11 +401,11 @@ def rpt_class_summary_line(gb, send_email=False):
         return
     students = gb.get_actives()
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
-    n,m = pcts.shape
+    m,n = pcts.shape
     weights = np.array([cat.pct_of_grade for cat in cats])
     adj_weights = weights/sum(weights)
     grades = (pcts*adj_weights).sum(1)
-    for i in range(n):
+    for i in range(m):
         student = students[i]
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
     pause()

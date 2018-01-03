@@ -3,13 +3,13 @@ import subprocess
 # --------------------------------------
 # User input and type conversion helpers
 # --------------------------------------
-def get_string(title, default=None, prompt=" >> "):
+def get_string(title, default=None, prompt=">>> "):
     ftitle = title if default == None else title + " ({0:s})".format(default)
     print(ftitle)
     sval = input(prompt)
     return default if default != None and sval == '' else sval
 
-def get_bool(title, default=None, prompt=" >> "):
+def get_bool(title, default=None, prompt=">>> "):
     ftitle = title if default == None else title + \
             " ({0:s})".format('Y' if default == 1 else 'N')
     while True:
@@ -25,7 +25,7 @@ def get_bool(title, default=None, prompt=" >> "):
             say("invalid")
             print("Value should be Y or N")
 
-def get_valid_float(title, minval, maxval, default=None, prompt=" >> ") :
+def get_valid_float(title, minval, maxval, default=None, prompt=">>> ") :
     ftitle = title if default == None else title + " ({0:.1f})".format(default)
     while True:
         print(ftitle)
@@ -43,7 +43,7 @@ def get_valid_float(title, minval, maxval, default=None, prompt=" >> ") :
             say("What?")
             print("What?")
 
-def get_valid_int(title, minval, maxval, default=None, prompt=" >> ") :
+def get_valid_int(title, minval, maxval, default=None, prompt=">>> ") :
     ftitle = title if default == None else title + " ({0:d})".format(default)
     while True:
         print(ftitle)
@@ -61,7 +61,7 @@ def get_valid_int(title, minval, maxval, default=None, prompt=" >> ") :
             say("What?")
             print("What?")
 
-def get_int_from_list(title, slist, default=None, prompt = " >> "):
+def get_int_from_list(title, slist, default=None, prompt = ">>> "):
     ftitle = title if default == None else title + " ({0:d})".format(default)
     while True:
         print(ftitle)
@@ -81,7 +81,7 @@ def get_int_from_list(title, slist, default=None, prompt = " >> "):
             say("What?")
             print("What?")
 
-def get_space_separated_floats(title, default=None, prompt=" >> "):
+def get_space_separated_floats(title, default=None, prompt=">>> "):
     ftitle = title if default == None else title + " ({0:s})".format(' '.join(["{0:.1f}".format(p) for p in default]))
     while True: 
         print(ftitle)

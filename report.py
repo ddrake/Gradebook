@@ -16,8 +16,7 @@ class SimpleReport:
     """ A pretty flexible and simple report class """
     def __init__(self, title, name_col_width=16, data_col_width=6, total_col_width=8, \
             name_col_name='Name', row_headings=[], col_headings=[], data=[], \
-            total_col=None, total_col_name="Total", pct_col=None, \
-            has_total_row=False, has_average_row=False):
+            total_col=None, total_col_name="Total", pct_col=None, has_average_row=False):
         self.title = title
         self.name_col_width = name_col_width
         self.data_col_width = data_col_width
@@ -29,7 +28,6 @@ class SimpleReport:
         self.total_col = total_col
         self.total_col_name = total_col_name
         self.pct_col = pct_col
-        self.has_total_row = has_total_row
         self.has_average_row = has_average_row
 
     def render(self):
@@ -66,15 +64,6 @@ class SimpleReport:
     def render_footer(self):
         n,m = self.data.shape
         out = self.hrule(m)
-        if self.has_total_row:
-            out += "Total".ljust(self.name_col_width)
-            for j in range(m):
-                out += "{0:.1f}".format(self.data[:,j].sum()).rjust(self.data_col_width)
-            if self.total_col: 
-                out += "{0:.1f}".format(self.total_col.sum()).rjust(self.total_col_width)
-            if self.pct_col: 
-                out += "{0:.1f}".format(self.pct_col.sum()).rjust(self.total_col_width)
-            out += "\n"
         if self.has_average_row:
             out += "Average".ljust(self.name_col_width)
             for j in range(m):

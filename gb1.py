@@ -95,8 +95,7 @@ def import_students(gb):
 #---------------------
 def add_gradeable(gb):
     if not gb.categories:
-        print("Can't create a graded item until there is at least one category.")
-        pause()
+        pause("Can't create a graded item until there is at least one category.")
         return
     name = get_string("Enter Graded Item Name")
     cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
@@ -145,10 +144,7 @@ def delete_gradeable(gb):
 
 def import_scores(gb):
     if gb.cur_gradeable.has_scores():
-        print("Delete existing scores? (Y/N)")
-        resp = input(">>> ")
-        if resp.upper() != 'Y':
-            return
+        if not confirm("Delete existing scores?"): return
         gb.cur_gradeable.delete_scores()
     try:
         with open('scores.txt','r') as f:
@@ -379,11 +375,8 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
 
 # Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):
-    if send_email:
-        print("Are you sure you want to email ALL students? (Y/N)")
-        resp = input(">>> ")
-        if resp.upper() != 'Y':
-            return
+    if send_email and not confirm("Are you sure you want to email ALL students?"): 
+        return
     cats = gb.categories_with_scores()
     if not cats:
         pause(msg="No categories with Scores.")

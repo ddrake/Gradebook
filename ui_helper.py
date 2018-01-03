@@ -99,6 +99,11 @@ def get_space_separated_floats(title, default=None, prompt=">>> "):
 def pause(msg=''):
     input((msg+'  ' if msg else '') + "Press <Enter> to Continue. ")
 
+def confirm(msg):
+    print(msg + " (Y/N)")
+    resp = input(">>> ")
+    return resp.upper() == 'Y'
+ 
 # Give an audible warning
 def say(phrase):
     subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])

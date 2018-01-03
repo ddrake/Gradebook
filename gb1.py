@@ -4,12 +4,12 @@ import sys, os
 import subprocess
 import datetime
 import numpy as np
-from matplotlib import pyplot as plt 
 from model import *
 import persist
 from ui_helper import *
 import menus
 import gmail
+from report import SimpleReport, plot_hist
 
 #--------------------
 # Course Management
@@ -173,6 +173,7 @@ def import_scores(gb):
         print(err)
     finally:
         pause()
+
 #------------
 # Score Entry
 #------------
@@ -281,17 +282,6 @@ def input_student_score(gb, q_idx):
 #--------
 # Reports
 #--------
-def plot_hist(pcts, title):
-    h=np.histogram(pcts,bins=(0,60,70,80,90,100))
-    barlist = plt.bar(range(5),h[0],width=0.85)
-    colors = ['#ff0000', '#ff8000', '#ffff00', '#0080ff','#00ff00']
-    for i in range(5):
-        barlist[i].set_color(colors[i])
-    xlab=['F', 'D', 'C', 'B', 'A']
-    plt.xticks(np.arange(5),xlab)
-    plt.title(title)
-    plt.show()
-
 def rpt_graded_item_details(gb):
     cg = gb.cur_gradeable
     names = np.array([s.name() for s in gb.get_actives()])
@@ -305,30 +295,12 @@ def rpt_graded_item_details(gb):
     totinds = tots.argsort()
     ar, names = ar[totinds,:], names[totinds]
     tots, pcts = tots[totinds], pcts[totinds]
-    name_col_width, data_col_width, total_col_width = 16, 6, 8
-    print(title)
-    print("-"*len(title))
-    print("Student".ljust(name_col_width), end='')
-    for j in range(m):
-        print("#{0:d}".format(j+1).rjust(data_col_width), end='')
-    print("Total".rjust(total_col_width),end='')
-    print("Pct.".rjust(total_col_width))
-    print("-"*(name_col_width + m*data_col_width + 2*total_col_width))
-    for i in range(n):
-        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
-        for j in range(m):
-            print("{0:.1f}".format(ar[i,j]).rjust(data_col_width), end='')
-        print("{0:.1f}".format(tots[i]).rjust(total_col_width), end='')
-        print("{0:.1f}".format(pcts[i]).rjust(total_col_width))
-
-    print("-"*(name_col_width + m*data_col_width + 2*total_col_width))
-    print("Average".ljust(name_col_width), end='')
-    for j in range(m):
-        print("{0:.1f}".format(ar[:,j].mean()).rjust(data_col_width), end='')
-    print("{0:.1f}".format(tots.mean()).rjust(total_col_width), end='')
-    print("{0:.1f}".format(pcts.mean()).rjust(total_col_width))
-    print('')
-    print('')
+    col_headings = ["#{0:d}".format(j+1) for j in range(m)]
+    rpt = SimpleReport(title, name_col_width=16, data_col_width=6, total_col_width=8, \
+            name_col_name='Student', row_headings=names, col_headings=col_headings, \
+            data=ar, total_col=tots, total_col_name = "Total", \
+            pct_col=pcts, has_average_row=True)
+    print(rpt.render())
     pause()
 
 def rpt_class_detail(gb):
@@ -337,7 +309,7 @@ def rpt_class_detail(gb):
         pause(msg="No Graded Items with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
-    gnames = [g.name for g in gradeables]
+    col_headings = [g.name for g in gradeables]
     ar = np.array([[g.adjusted_score(s) for g in gradeables] for s in gb.get_actives()])
     n,m = ar.shape
     possibles = np.array([g.total_pts for g in gradeables])
@@ -348,25 +320,10 @@ def rpt_class_detail(gb):
     aveinds = aves.argsort()
     pcts, names, aves = pcts[aveinds,:], names[aveinds], aves[aveinds]
     name_col_width, data_col_width, total_col_width = 16, 8, 8
-    print(title)
-    print("-"*len(title))
-    print("Student".ljust(name_col_width), end='')
-    for gn in gnames:
-        print("{0:s}".format(gn).rjust(data_col_width), end='')
-    print("Avg.".rjust(total_col_width))
-    print("-"*(name_col_width + m*data_col_width + total_col_width))
-    for i in range(n):
-        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
-        for j in range(m):
-            print("{0:.1f}".format(pcts[i,j]).rjust(data_col_width), end='')
-        print("{0:.1f}".format(aves[i]).rjust(total_col_width))
-    print("-"*(name_col_width + m*data_col_width + total_col_width))
-    print("Average".ljust(name_col_width), end='')
-    for j in range(m):
-        print("{0:.1f}".format(pcts[:,j].mean()).rjust(data_col_width), end='')
-    print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
-    print('')
-    print('')
+    rpt = SimpleReport(title, name_col_width=16, data_col_width=8, total_col_width=8, \
+            name_col_name='Student', row_headings=names, col_headings=col_headings, \
+            data=pcts, total_col=aves, total_col_name="Avg.", has_average_row=True)
+    print(rpt.render())
     pause()
 
 def rpt_class_summary(gb):
@@ -384,25 +341,10 @@ def rpt_class_summary(gb):
     aveinds = aves.argsort()
     pcts, names, aves = pcts[aveinds,:], names[aveinds], aves[aveinds]
     name_col_width, data_col_width, total_col_width = 16, 8, 8
-    print(title)
-    print("-"*len(title))
-    print("Student".ljust(name_col_width), end='')
-    for cn in cnames:
-        print("{0:s}".format(cn).rjust(data_col_width), end='')
-    print("Avg.".rjust(total_col_width))
-    print("-"*(name_col_width + m*data_col_width + total_col_width))
-    for i in range(n):
-        print("{0:s}".format(names[i]).ljust(name_col_width), end='')
-        for j in range(m):
-            print("{0:.1f}".format(pcts[i,j]).rjust(data_col_width), end='')
-        print("{0:.1f}".format(aves[i]).rjust(total_col_width))
-    print("-"*(name_col_width + m*data_col_width + total_col_width))
-    print("Average".ljust(name_col_width), end='')
-    for j in range(m):
-        print("{0:.1f}".format(pcts[:,j].mean()).rjust(data_col_width), end='')
-    print("{0:.1f}".format(aves.mean()).rjust(total_col_width))
-    print('')
-    print('')
+    rpt = SimpleReport(title, name_col_width=16, data_col_width=8, total_col_width=8, \
+            name_col_name="Student", row_headings=names, col_headings=cnames, \
+            data = pcts, total_col=aves, total_col_name="Avg.", has_average_row=True)
+    print(rpt.render())
     pause()
 
 def student_summary_line_body(student, grade, cats, pcts, send_email):
@@ -430,7 +372,8 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
             g.recipients = [student.email]
             g.send()
         except:
-            print("failed to send the email.  Perhaps there is something wrong with the signature file.")
+            print("failed to send the email.  ", \
+                    "Perhaps there is something wrong with the signature file.")
     else:
         print(salutation, grade_info)
 

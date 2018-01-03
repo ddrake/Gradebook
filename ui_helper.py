@@ -103,3 +103,7 @@ def pause(msg=''):
 def say(phrase):
     subprocess.call(['spd-say', '-w', '"{0:s}"'.format(phrase)])
 
+def print_say(phrase):
+    print(phrase)
+    say(phrase)
+

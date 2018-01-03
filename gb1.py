@@ -189,12 +189,10 @@ def input_score(gb, st_idx, q_idx):
     q_ct = len(cg.questions)
     s_ct = len(gb.get_actives())
     if st_idx <= 0 and q_idx < 0:
-        print("First One")
-        say("first one")
+        print_say("First One")
         input_score(gb, 0, 0)
     elif st_idx >= s_ct - 1 and q_idx >= q_ct:
-        print("Last One")
-        say("last one")
+        print_say("Last One")
         input_score(gb, s_ct-1, q_ct-1)
     elif q_idx >= q_ct:
         input_score(gb,st_idx + 1, 0)
@@ -224,12 +222,10 @@ def input_score(gb, st_idx, q_idx):
                     score.value = tval
                     input_score(gb, st_idx, q_idx+1)
                 else:
-                    say("invalid")
-                    print("Invalid score")
+                    print_say("Invalid score")
                     input_score(gb, st_idx, q_idx)
             except ValueError:
-                say("What?")
-                print("What?")
+                print_say("What?")
                 input_score(gb, st_idx, q_idx)
 
 # Helper for input_student_score -- starts the recursion
@@ -245,12 +241,10 @@ def input_student_score(gb, q_idx):
     q_ct = len(cg.questions)
 
     if q_idx >= len(cg.questions):
-        print("Last One")
-        say("last one")
+        print_say("Last One")
         input_student_score(gb, q_ct - 1)
     elif q_idx < 0:
-        print("First One")
-        say("first one")
+        print_say("First One")
         input_student_score(gb, 0 )
     else:
         q = cg.questions[q_idx]
@@ -271,12 +265,10 @@ def input_student_score(gb, q_idx):
                     score.value = tval
                     input_student_score(gb, q_idx+1)
                 else:
-                    say("invalid")
-                    print("Invalid score")
+                    print_say("Invalid score")
                     input_student_score(gb, q_idx)
             except ValueError:
-                say("What?")
-                print("What?")
+                print_say("What?")
                 input_student_score(gb, q_idx)
 
 #--------

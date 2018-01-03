@@ -72,7 +72,7 @@ class SimpleReport:
                 out += "{0:.1f}".format(self.total_col.mean()).rjust(self.total_col_width)
             if not self.pct_col is None: 
                 out += "{0:.1f}".format(self.pct_col.mean()).rjust(self.total_col_width)
-            out += "\n\n"
+        out += "\n\n"
         return out
 
     def hrule(self, m):

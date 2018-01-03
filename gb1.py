@@ -229,15 +229,15 @@ def get_input(score, s, g, q, s_idx, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
         value = input(">>> ")
-        if value.lower() == 'q':
+        if value.upper() == 'Q':
             return True, s_idx, q_idx
-        elif value.lower() == 'b':
+        elif value.upper() == 'B':
             return False, s_idx, q_idx-1
         elif value == '':
             return False, s_idx, q_idx+1
-        elif value.lower() == 'n':
+        elif value.upper() == 'N':
             return False, s_idx+1, 0
-        elif value.lower() == 'p':
+        elif value.upper() == 'P':
             return False, s_idx-1, 0
         else:
             return False, s_idx, q_idx + try_set_score(score, q, value, q_idx)
@@ -246,9 +246,9 @@ def get_student_input(score, s, g, q, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
         value = input(">>> ")
-        if value.lower() == 'q':
+        if value.upper() == 'Q':
             return True, q_idx
-        elif value.lower() == 'b':
+        elif value.upper() == 'B':
             return False, q_idx-1
         elif value == '':
             return False, q_idx+1

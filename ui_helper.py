@@ -14,12 +14,12 @@ def get_bool(title, default=None, prompt=" >> "):
             " ({0:s})".format('Y' if default == 1 else 'N')
     while True:
         print(ftitle)
-        sval = input(prompt).lower()
+        sval = input(prompt).upper()
         if default != None and sval == '':
             return default
-        if sval == 'y':
+        if sval == 'Y':
             return 1
-        elif sval == 'n':
+        elif sval == 'N':
             return 0
         else:
             say("invalid")

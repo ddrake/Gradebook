@@ -91,7 +91,7 @@ class Student:
         self.is_active = is_active
 
     def name(self):
-        return self.first + (' {0:s}.'.format(self.last[0]) if self.last else '')
+        return self.first + (' {}.'.format(self.last[0]) if self.last else '')
 
     def fullname(self):
         return self.first + ' ' + self.last

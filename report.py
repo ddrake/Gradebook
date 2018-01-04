@@ -51,7 +51,7 @@ class SimpleReport:
         out = ""
         n,m = self.data.shape
         for i in range(n):
-            out += "{0:s}".format(self.row_headings[i]).ljust(self.name_col_width)
+            out += "{}".format(self.row_headings[i]).ljust(self.name_col_width)
             for j in range(m):
                 out += "{0:.1f}".format(self.data[i,j]).rjust(self.data_col_width)
             if self.total_col is not None: 

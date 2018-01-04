@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 import sys, os
-import subprocess
 import datetime
 import numpy as np
 from model import *
 import persist
-from ui_helper import *
+import ui_helper as ui
 import menus
 import gmail
 from report import SimpleReport, plot_hist
@@ -15,8 +14,8 @@ from report import SimpleReport, plot_hist
 # Course Management
 #--------------------
 def edit_course(gb):
-    name = get_string("Enter Course Name", gb.name)
-    term = get_string("Enter Quarter", gb.term)
+    name = ui.get_string("Enter Course Name", gb.name)
+    term = ui.get_string("Enter Quarter", gb.term)
     gb.name = name
     gb.term = term
 
@@ -24,17 +23,17 @@ def edit_course(gb):
 # Category Management
 #--------------------
 def add_category(gb):
-    name = get_string("Enter Category Name")
-    pct_of_grade = get_valid_float("Percent of Grade", 0, 100)
-    drop_low_n = get_valid_int("Drop Lowest n", 0, 3, 0)
+    name = ui.get_string("Enter Category Name")
+    pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100)
+    drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, 0)
     cat = Category(gb, name, pct_of_grade, drop_low_n)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
 def edit_category(gb):
-    name = get_string("Enter Category Name", gb.cur_category.name)
-    pct_of_grade = get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
-    gb.cur_category.drop_low_n = get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
+    name = ui.get_string("Enter Category Name", gb.cur_category.name)
+    pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
+    gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
     gb.cur_category.name = name or gb.cur_category.name
     gb.cur_category.pct_of_grade = pct_of_grade
     menus.set_category_options(gb)
@@ -48,19 +47,19 @@ def delete_category(gb):
 # Student Management
 #-------------------
 def add_student(gb):
-    first = get_string("Enter First Name")
-    last = get_string("Enter Last Name")
-    email = get_string("Enter Email")
+    first = ui.get_string("Enter First Name")
+    last = ui.get_string("Enter Last Name")
+    email = ui.get_string("Enter Email")
     gb.add_student(first, last, email)
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None
     menus.set_student_options(gb)
 
 def edit_student(gb):
-    first = get_string("Enter First Name", gb.cur_student.first)
-    last = get_string("Enter Last Name", gb.cur_student.last)
-    email = get_string("Enter Email", gb.cur_student.email)
-    is_active = get_bool("Is the Student Active? (y/n)", gb.cur_student.is_active)
+    first = ui.get_string("Enter First Name", gb.cur_student.first)
+    last = ui.get_string("Enter Last Name", gb.cur_student.last)
+    email = ui.get_string("Enter Email", gb.cur_student.email)
+    is_active = ui.get_bool("Is the Student Active? (y/n)", gb.cur_student.is_active)
     gb.cur_student.first = first
     gb.cur_student.last = last
     gb.cur_student.email = email
@@ -89,19 +88,19 @@ def import_students(gb):
         menus.set_student_options(gb)
     except:
         print("The file 'students.txt' could not be found or was incorrectly formatted")
-    pause()
+    ui.pause()
 #---------------------
 # Gradeable Management
 #---------------------
 def add_gradeable(gb):
     if not gb.categories:
-        pause("Can't create a graded item until there is at least one category.")
+        ui.pause("Can't create a graded item until there is at least one category.")
         return
-    name = get_string("Enter Graded Item Name")
-    cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
+    name = ui.get_string("Enter Graded Item Name")
+    cat = ui.get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
     category = gb.categories[cat-1]
-    fpts = get_space_separated_floats("Enter question point values separated by whitespace")
-    total_pts = get_valid_float("Total Points", sum(fpts)/2, sum(fpts), sum(fpts))
+    fpts = ui.get_space_separated_floats("Enter question point values separated by whitespace")
+    total_pts = ui.get_valid_float("Total Points", sum(fpts)/2, sum(fpts), sum(fpts))
     gradeable = Gradeable(gb, name, category, total_pts)
     questions = [Question(gradeable, p) for p in fpts]
     gradeable.questions = questions
@@ -110,23 +109,23 @@ def add_gradeable(gb):
 
 def edit_gradeable(gb):
     cg = gb.cur_gradeable
-    name = get_string("Enter Graded Item Name", cg.name)
+    name = ui.get_string("Enter Graded Item Name", cg.name)
     def_sel = gb.categories.index(cg.category) + 1
-    cat = get_int_from_list("Select a numbered category", [c.name for c in gb.categories], def_sel )
+    cat = ui.get_int_from_list("Select a numbered category", [c.name for c in gb.categories], def_sel )
     category = gb.categories[cat-1]
     pts = [q.points for q in cg.questions]
     prev_tot = sum(pts)
     bonus = prev_tot - cg.total_pts
     if not cg.has_scores():
-        fpts = get_space_separated_floats("Enter question point values separated by whitespace", pts)
-        total_pts = get_valid_float("Total Points", sum(fpts)/2.0, sum(fpts), \
+        fpts = ui.get_space_separated_floats("Enter question point values separated by whitespace", pts)
+        total_pts = ui.get_valid_float("Total Points", sum(fpts)/2.0, sum(fpts), \
             cg.total_pts if prev_tot == sum(fpts) else sum(fpts) - bonus)
     else:
         print("Question points: ", pts)
-        total_pts = get_valid_float("Total Points", prev_tot/2, prev_tot, cg.total_pts)
-    sub_pct = get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
-    added_pts = get_valid_float("Added Points", 0, 10000, cg.added_pts)
-    added_pct = get_valid_float("Added Percent", 0, 100, cg.added_pct)
+        total_pts = ui.get_valid_float("Total Points", prev_tot/2, prev_tot, cg.total_pts)
+    sub_pct = ui.get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
+    added_pts = ui.get_valid_float("Added Points", 0, 10000, cg.added_pts)
+    added_pct = ui.get_valid_float("Added Percent", 0, 100, cg.added_pct)
     cg.name = name or cg.name
     cg.category = category
     cg.total_pts = total_pts
@@ -144,7 +143,7 @@ def delete_gradeable(gb):
 
 def import_scores(gb):
     if gb.cur_gradeable.has_scores():
-        if not confirm("Delete existing scores?"): return
+        if not ui.confirm("Delete existing scores?"): return
         gb.cur_gradeable.delete_scores()
     try:
         with open('scores.txt','r') as f:
@@ -168,7 +167,7 @@ def import_scores(gb):
         print("The file 'scores.txt' could not be found or was incorrectly formatted")
         print(err)
     finally:
-        pause()
+        ui.pause()
 
 #------------
 # Score Entry
@@ -199,10 +198,10 @@ def input_student_scores(gb, s):
 
 def handle_limits(s_idx, q_idx, s_ct, q_ct):
     if s_idx <= 0 and q_idx < 0:
-        print_say("First One")
+        ui.print_say("First One")
         return 0, 0
     elif s_idx >= s_ct - 1 and q_idx >= q_ct:
-        print_say("Last One")
+        ui.print_say("Last One")
         return s_ct - 1, q_ct - 1
     elif q_idx >= q_ct:  
         return s_idx + 1, 0
@@ -213,10 +212,10 @@ def handle_limits(s_idx, q_idx, s_ct, q_ct):
  
 def handle_qlimit(q_idx, q_ct):
     if q_idx < 0:
-        print_say("First One")
+        ui.print_say("First One")
         return 0
     elif q_idx >= q_ct:
-        print_say("Last One")
+        ui.print_say("Last One")
         return q_ct-1
     else:
         return q_idx
@@ -224,7 +223,7 @@ def handle_qlimit(q_idx, q_ct):
 def get_input(score, s, g, q, s_idx, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
-        value = input(">>> ")
+        value = ui.dinput()
         if value.upper() == 'Q':
             return True, s_idx, q_idx
         elif value.upper() == 'B':
@@ -241,7 +240,7 @@ def get_input(score, s, g, q, s_idx, q_idx):
 def get_student_input(score, s, g, q, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
-        value = input(">>> ")
+        value = ui.dinput()
         if value.upper() == 'Q':
             return True, q_idx
         elif value.upper() == 'B':
@@ -258,10 +257,10 @@ def try_set_score(score, q, value, q_idx):
             score.value = tval
             return 1
         else:
-            print_say("Invalid score")
+            ui.print_say("Invalid score")
             return 0
     except ValueError:
-        print_say("What?")
+        ui.print_say("What?")
         return 0
 
 #--------
@@ -274,7 +273,7 @@ def rpt_graded_item_details(gb):
             for s in gb.get_actives()])
     tots = ar.sum(1)
     pcts = tots/cg.total_pts*100.0
-    title="{0:s} Details".format(cg.name)
+    title="{} Details".format(cg.name)
     plot_hist(pcts,title)
     totinds = tots.argsort()
     ar, names = ar[totinds,:], names[totinds]
@@ -286,12 +285,12 @@ def rpt_graded_item_details(gb):
             data=ar, total_col=tots, total_col_name = "Total", \
             pct_col=pcts, has_average_row=True)
     print(rpt.render())
-    pause()
+    ui.pause()
 
 def rpt_class_detail(gb):
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
     if not gradeables:
-        pause(msg="No Graded Items with Scores.")
+        ui.pause(msg="No Graded Items with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
     col_headings = [g.name for g in gradeables]
@@ -307,12 +306,12 @@ def rpt_class_detail(gb):
             name_col_name='Student', row_headings=names, col_headings=col_headings, \
             data=pcts, total_col=aves, total_col_name="Avg.", has_average_row=True)
     print(rpt.render())
-    pause()
+    ui.pause()
 
 def rpt_class_summary(gb):
     cats = gb.categories_with_scores()
     if not cats:
-        pause(msg="No categories with Scores.")
+        ui.pause(msg="No categories with Scores.")
         return
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
@@ -327,15 +326,15 @@ def rpt_class_summary(gb):
             name_col_name="Student", row_headings=names, col_headings=cnames, \
             data = pcts, total_col=aves, total_col_name="Avg.", has_average_row=True)
     print(rpt.render())
-    pause()
+    ui.pause()
 
 def student_summary_line_body(student, grade, cats, pcts, send_email):
     name_col_width = 16
     if send_email:
-        salutation = "Hi {0:s},\n\n".format(student.first)
+        salutation = "Hi {},\n\n".format(student.first)
         salutation += "Here's your current estimated grade information: \n\n"
     else:
-        salutation = "{0:s}".format(student.name()).ljust(name_col_width)
+        salutation = "{}".format(student.name()).ljust(name_col_width)
 
     grade_info = "Current Est. Grade: {0:.1f} based on: ".format(grade)
     n = len(cats)
@@ -363,7 +362,7 @@ def student_summary_line_body(student, grade, cats, pcts, send_email):
 def rpt_student_summary_line(gb, send_email=False, stud=None):
     cats = gb.categories_with_scores()
     if not cats:
-        pause("No categories with Scores.")
+        ui.pause("No categories with Scores.")
         return
     student = stud or gb.cur_student
     pcts = np.array([c.combined_pct(student) for c in cats])
@@ -371,15 +370,15 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
     adj_weights = weights/sum(weights)
     grade = (pcts*adj_weights).sum()
     student_summary_line_body(student, grade, cats, pcts, send_email) 
-    pause()
+    ui.pause()
 
 # Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):
-    if send_email and not confirm("Are you sure you want to email ALL students?"): 
+    if send_email and not ui.confirm("Are you sure you want to email ALL students?"): 
         return
     cats = gb.categories_with_scores()
     if not cats:
-        pause(msg="No categories with Scores.")
+        ui.pause(msg="No categories with Scores.")
         return
     students = gb.get_actives()
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
@@ -390,7 +389,7 @@ def rpt_class_summary_line(gb, send_email=False):
     for i in range(m):
         student = students[i]
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
-    pause()
+    ui.pause()
 
 def save_and_exit(gb):
     persist.save(gb, gb.file_name())
@@ -417,6 +416,5 @@ if __name__ == "__main__":
                 str(today.year + (1 if term == "Winter" else 0)))
 
     menus.initialize_menus(gb)
-    #subprocess.call(['speech-dispatcher'])    #start speech dispatcher   
     menus.m_main.open()
 

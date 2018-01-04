@@ -80,7 +80,7 @@ def set_student_options(gb):
     m_student.add_option("Return to Gradebook", m_student.close)
     m_student.add_option("Add Student", lambda : app.add_student(gb))
     for item in gb.students:
-        label = "{0:s}{1:s}{2:s}".format(item.name(), ('' if item.is_active else ' *'), \
+        label = "{}{}{}".format(item.name(), ('' if item.is_active else ' *'), \
                 ('' if item.has_scores() else ' (No scores)'))
         m_student.add_option(label, lambda i=item: set_and_open_student(gb,i))
     set_score_one_entry_options(gb)
@@ -106,7 +106,7 @@ def set_gradeable_options(gb):
     m_gradeable.add_option("Return to Gradebook", m_gradeable.close)
     m_gradeable.add_option("Add Graded Item", lambda : app.add_gradeable(gb))
     for item in sorted(gb.gradeables, key=lambda i: i.name):
-        label = "{0:s}{1:s}".format(item.name, ('' if item.has_scores() else ' (No scores)'))
+        label = "{}{}".format(item.name, ('' if item.has_scores() else ' (No scores)'))
         m_gradeable.add_option(label, \
                 lambda i=item: set_gradeable_open_gradeable_edit_del(gb, i))
     set_score_all_options(gb)

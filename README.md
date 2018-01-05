@@ -6,12 +6,12 @@ The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/
 
 All data for a course is stored in a single JSON file, which is written when you 'Save' or 'Quit'.  The top level 'Course' object has properties for the course name and the term.  The JSON file is named by a concatenation of these. A Course contains lists of Categories, Graded Items and Students and a dictionary of Scores.  
 
-To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2017" we execute it like this:
+To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2018" we execute it like this:
 
 ```$ ./gb1 Math_251_Fall_2018.json```  
 
 ### New Course Setup
-You can create a new course by running the application without specifying a file.  You should see a menu like this:
+You can create a new course simply by running the application without specifying a file.  You should see a menu like this:
 
 Gradebook
 
@@ -30,11 +30,11 @@ Gradebook
 
 #### Course
 
-To set up a new course, first select 'Edit Course' to change the Course name and term as you like.  
+To set up your new course, first select 'Edit Course' to change the Course name and term from their default values.  
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted.  Inactive students don't show up on reports or when entering scores.
 
 #### Categories
 
@@ -44,18 +44,18 @@ The next step is to Manage Categories. A category could be 'Quiz' or 'Midterm 1'
 
 Once a category has been set up, you can add graded items, such as Quiz 1.  Each graded item is associated with a category.  There is quite a bit of flexibility built in.  For example, you specify the points for each question.  If you want one of the questions to be a bonus, just subtract its point value from the total, which is specified separately.
 
-Suppose half the class failed the midterm and you decide to allow a retake option so that students can earn 25% of the difference of the retake score and the original score.  This could be handled by setting the retake percentage of the graded item 'Midterm retake' to be 25.  You would just need to enter the differences between the scores.  If the retake percentage is 0 (the default) for all graded items in a category, they are combined simply by averaging.  
+Suppose half the class failed the midterm and you decide to allow a retake option so that students can earn 25% of the difference of the retake score and the original score.  This could be handled by setting the retake percentage of the graded item 'Midterm retake' to be 25.  You would just need to enter the differences between the scores.  If the retake percentage is 0 (the default) for all graded items in a category, they are combined simply by adding averaging their _percentages_.  For example, all homeworks count the equally toward the grade, even if one is out of 15 points and another is out of 20 points.
 
 A graded item may also be "curved" by setting its "added points" or "added percent".  If either of these is nonzero, it will be applied to the graded item before any combination is applied.  It is easy to include bonus problems on a quiz or exam, since you specify separately the total points and the individual question points.  The sum of the individual question points may exceed the total points, but may not be less than the total.  These options don't appear when you add a new graded item, but are available when you edit an existing one.  
 
 ### Entering Scores
-Entering scores is pretty simple and optimized for speed.  Normally you will want to enter scores for all students for a particular quiz.  The application will prompt you sequentially for each score for each student.  You can skip to the next student by entering 'n' or go back to the previous student using 'p'.  You can go back to the last problem using 'b' and quit data entry using 'q'.  You can also skip over a question by just hitting enter to leave the previous value unchanged.  This idea is used everywhere in the application.
+Entering scores is pretty simple and optimized for speed.  Normally you will want to enter scores for all students for a particular quiz.  The application will prompt you sequentially for each score for each student.  You can skip to the next student by entering 'n' or go back to the previous student using 'p'.  You can go back to the last problem using 'b' and quit data entry using 'q'.  You can also skip over a question by just hitting enter to leave the previous value unchanged.  This idea is used everywhere in the application.  It's also possible to select single student for score entry, which is handy if someone turns in an assignment late.  Score entry works the same in this case, except there is no need for 'n' (next student) or 'p' (previous student) so these keys are inactive. 
 
-If you make an invalid entry, such as a typo, or entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.  You will also receive an audible and printed warning if you try to go past the end of the list, or go back before the beginning.
+If you make an invalid entry, such as a typo, or entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.  You will also receive an audible and printed warning when you reach the end of the list, or try to go back before the beginning.
 
 #### Importing Scores
 
-If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall webassign total can be imported into an existing graded item with a single question representing the total possible points.
+If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall Webassign total can be imported into an existing graded item with a single question representing the total possible points.
 
 The tab-separated scores file to be imported must be named scores.txt and located in the application folder, and must match the layout of the 'scores.txt.sample' file provided in this repository.
 
@@ -76,4 +76,4 @@ A schema version number is now stored in the JSON course file.  If the gradebook
 
 ### Contributing
 
-I've designed this application primarily to suit my preferences as an instructor.  If there are other features that you would like included, please feel free to fork this repository and add them.  If you add a feature or bug fix that you think might be useful for others, you're welcome to submit a pull request.
+I've designed this application primarily to suit my preferences as an instructor.  If there are other features that you would like included, please feel free to fork this repository and add them.  If you add a feature or bug fix that you think might be useful for others, you're welcome to submit a pull request.  As time permits, I'll probably do some testing on Windows and OSX.  If you encounter issues, you may post them here.

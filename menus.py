@@ -7,6 +7,7 @@ m_course = Menu(title = "Edit Course")
 m_category = Menu(title = "Manage Categories")
 m_category_edit_del = Menu(title = "Edit / Delete Category")
 m_student = Menu(title = "Manage Students")
+m_student_last_first = Menu(title = "Manage Students")
 m_student_edit_del = Menu(title = "Edit / Delete Student")
 m_student_import = Menu(title = \
         "Import Students from Tab-Separated Textfile 'students.txt'")
@@ -80,9 +81,24 @@ def set_student_options(gb):
     m_student.add_option("Return to Gradebook", m_student.close)
     m_student.add_option("Add Student", lambda : app.add_student(gb))
     for item in gb.students:
-        label = "{}{}{}".format(item.name(), ('' if item.is_active else ' *'), \
-                ('' if item.has_scores() else ' (No scores)'))
+        name = "{} {}".format(item.first, item.last)
+        label = "{0:30s}{1:s}{2:s}{3:s}".format(name, item.email, \
+            ('' if item.is_active else ' *'), \
+            ('' if item.has_scores() else ' (No scores)')) 
         m_student.add_option(label, lambda i=item: set_and_open_student(gb,i))
+    set_score_one_entry_options(gb)
+    set_reports_student_sel_options(gb)
+
+def set_student_last_first_options(gb):
+    m_student_last_first.options = []
+    m_student_last_first.add_option("Return to Gradebook", m_student_last_first.close)
+    m_student_last_first.add_option("Add Student", lambda : app.add_student(gb))
+    for item in sorted(gb.students, key=lambda s: s.last):
+        name = "{}, {}".format(item.last, item.first)
+        label = "{0:30s}{1:s}{2:s}{3:s}".format(name, item.email, \
+            ('' if item.is_active else ' *'), \
+            ('' if item.has_scores() else ' (No scores)')) 
+        m_student_last_first.add_option(label, lambda i=item: set_and_open_student(gb,i))
     set_score_one_entry_options(gb)
     set_reports_student_sel_options(gb)
 
@@ -174,7 +190,7 @@ def set_reports_student_sel_options(gb):
     m_reports_student_sel.options = []
     m_reports_student_sel.add_option("Return to Report Menu", \
             m_reports_student_sel.close)
-    for item in sorted(gb.get_actives(), key=lambda i: i.name()):
+    for item in gb.get_actives():
         m_reports_student_sel.add_option(item.name(), \
                 lambda i=item : set_and_open_reports_student(gb,i))
     set_reports_student_options(gb)
@@ -208,6 +224,7 @@ def set_main_options(gb):
     m_main.add_option("Manage Graded Items", m_gradeable.open)
     m_main.add_option("Manage Categories", m_category.open)
     m_main.add_option("Manage Students", m_student.open)
+    m_main.add_option("Manage Students (last, first)", m_student_last_first.open)
     m_main.add_option("Import Students", m_student_import.open)
     m_main.add_option("Edit Course", lambda : app.edit_course(gb))
 
@@ -220,6 +237,7 @@ def initialize_menus(gb):
     set_category_options(gb)
     set_category_edit_del_options(gb)
     set_student_options(gb)
+    set_student_last_first_options(gb)
     set_student_edit_del_options(gb)
     set_student_import_options(gb)
 

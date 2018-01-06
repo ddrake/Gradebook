@@ -23,8 +23,10 @@ Gradebook
 6. Manage Graded Items
 7. Manage Categories
 8. Manage Students
-9. Import Students
-10. Edit Course
+9. Manage Students (last, first)
+10. Import Students
+11. Export Students
+12. Edit Course
 
 ```>>>``` 
 
@@ -34,7 +36,7 @@ To set up your new course, first select 'Edit Course' to change the Course name 
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted.  Inactive students don't show up on reports or when entering scores.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted, whether or not they have scores.  Inactive students don't show up on reports or when entering new scores.  Later, as students add or drop the class, it's simple to export the list of students to a textfile for import into a spreadsheet.
 
 #### Categories
 

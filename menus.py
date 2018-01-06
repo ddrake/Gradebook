@@ -11,6 +11,8 @@ m_student_last_first = Menu(title = "Manage Students")
 m_student_edit_del = Menu(title = "Edit / Delete Student")
 m_student_import = Menu(title = \
         "Import Students from Tab-Separated Textfile 'students.txt'")
+m_student_export = Menu(title = \
+        "Export Students to Tab-Separated Textfile 'students.txt'")
 m_gradeable = Menu(title = "Manage Graded Items")
 m_gradeable_edit_del = Menu(title = "Edit / Delete Graded Item")
 m_score_all = Menu(title = "Enter Scores (All Students)")
@@ -226,6 +228,7 @@ def set_main_options(gb):
     m_main.add_option("Manage Students", m_student.open)
     m_main.add_option("Manage Students (last, first)", m_student_last_first.open)
     m_main.add_option("Import Students", m_student_import.open)
+    m_main.add_option("Export Students", lambda : app.export_students(gb))
     m_main.add_option("Edit Course", lambda : app.edit_course(gb))
 
 def initialize_menus(gb):

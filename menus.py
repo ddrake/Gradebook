@@ -217,6 +217,7 @@ def set_reports_student_options(gb):
 # main menu logic
 #------------------------
 def set_main_options(gb):
+    m_main.title = "Gradebook for {} {}".format(gb.name, gb.term)
     m_main.options = []
     m_main.add_option("Quit", lambda : app.save_and_exit(gb))
     m_main.add_option("Save", lambda : app.save_current(gb))

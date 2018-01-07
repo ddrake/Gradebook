@@ -18,6 +18,7 @@ def edit_course(gb):
     term = ui.get_string("Enter Quarter", gb.term)
     gb.name = name
     gb.term = term
+    menus.set_main_options(gb)
 
 #--------------------
 # Category Management
@@ -431,7 +432,7 @@ if __name__ == "__main__":
                   "Spring" if m >= 2 and m < 5 else \
                   "Summer" if m >=5 and m < 8 else "Fall" 
         gb = Course('New Course', term + " " + \
-                str(today.year + (1 if term == "Winter" else 0)))
+                str(today.year + (1 if term == "Winter" and m >= 11 else 0)))
 
     menus.initialize_menus(gb)
     menus.m_main.open()

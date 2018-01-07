@@ -68,7 +68,7 @@ def edit_student(gb):
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None 
     menus.set_student_options(gb)
-    menus.set_student_last_fist_options(gb)
+    menus.set_student_last_first_options(gb)
 
 def delete_student(gb):
     gb.remove_student(gb.cur_student)

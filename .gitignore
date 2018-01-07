@@ -106,4 +106,4 @@ ENV/
 *.txt
 *.swp
 parser.py
-
+*.ods

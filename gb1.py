@@ -76,7 +76,7 @@ def delete_student(gb):
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None
     menus.set_student_options(gb)
-    menus.set_student_last_fist_options(gb)
+    menus.set_student_last_first_options(gb)
     menus.m_student_edit_del.close()
 
 def import_students(gb):
@@ -90,7 +90,7 @@ def import_students(gb):
         gb.students.sort(key=lambda s : s.name())
         gb.actives = None
         menus.set_student_options(gb)
-        menus.set_student_last_fist_options(gb)
+        menus.set_student_last_first_options(gb)
     except:
         print("The file 'students.txt' could not be found or was incorrectly formatted")
     ui.pause()

@@ -16,8 +16,8 @@ def course_to_dict(gb):
     course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, 'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
             'drop_low_n': c.drop_low_n, 'obj': c} for i, c in enumerate(gb.categories)]
-    course['students'] = [{'id':i, 'first': s.first, 'last': s.last, 'email': s.email, 'obj': s} \
-            for i, s in enumerate(gb.students)]
+    course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
+            'email': s.email, 'is_active': s.is_active, 'obj': s} for i, s in enumerate(gb.students)]
     cat_dict = {item['obj']: item for item in course['categories']}
     for i, g in enumerate(gb.gradeables):
         gd = {'id':i, 'cid': cat_dict[g.category]['id'], 'name': g.name, 'total_pts': g.total_pts, \

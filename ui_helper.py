@@ -115,3 +115,10 @@ def print_say(phrase):
     print(phrase)
     say(phrase)
 
+def open_in_calc(filename):
+    try:
+        subprocess.call(['soffice', '--calc', filename])
+    except Exception:
+        print("Libre Calc may not be available")
+
+

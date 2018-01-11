@@ -7,7 +7,7 @@ def read(file_name):
     return course_from_dict(course_dict)
 
 def save(gb, file_name):
-    data = json.dumps(course_to_dict(gb), indent=2)
+    data = json.dumps(course_to_dict(gb), indent=2, sort_keys=True)
     with open(file_name, mode='w', encoding='utf-8') as f:
         f.write(data)
 

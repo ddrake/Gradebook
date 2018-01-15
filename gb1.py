@@ -69,7 +69,7 @@ def edit_student(gb):
     gb.cur_student.is_active = is_active
     if notes:
         if gb.cur_student.notes:
-            gb.cur_student.notes += '\n'
+            gb.cur_student.notes += '  '
         gb.cur_student.notes += notes
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None 

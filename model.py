@@ -1,4 +1,4 @@
-schema_version = 1
+schema_version = 2
 
 class Course:
     def __init__(self, name = '', term = ''):
@@ -83,12 +83,14 @@ class Course:
                + self.term.replace(' ','_') + ".json"
 
 class Student:
-    def __init__(self, course, first = '', last = '', email = '', is_active=1):
+    def __init__(self, course, first = '', last = '', email = '', \
+            is_active=1, notes=''):
         self.course = course
         self.first = first
         self.last = last
         self.email = email
         self.is_active = is_active
+        self.notes = notes
 
     def name(self):
         return self.first + (' {}.'.format(self.last[0]) if self.last else '')

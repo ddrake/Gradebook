@@ -62,10 +62,12 @@ def edit_student(gb):
     last = ui.get_string("Enter Last Name", gb.cur_student.last)
     email = ui.get_string("Enter Email", gb.cur_student.email)
     is_active = ui.get_bool("Is the Student Active? (y/n)", gb.cur_student.is_active)
+    notes = ui.get_string("Enter Notes", gb.cur_student.notes)
     gb.cur_student.first = first
     gb.cur_student.last = last
     gb.cur_student.email = email
     gb.cur_student.is_active = is_active
+    gb.cur_student.notes = notes
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None 
     menus.set_student_options(gb)

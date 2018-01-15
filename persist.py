@@ -17,7 +17,8 @@ def course_to_dict(gb):
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
             'drop_low_n': c.drop_low_n, 'obj': c} for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
-            'email': s.email, 'is_active': s.is_active, 'obj': s} for i, s in enumerate(gb.students)]
+            'email': s.email, 'is_active': s.is_active,'notes': s.notes, 'obj': s} \
+            for i, s in enumerate(gb.students)]
     cat_dict = {item['obj']: item for item in course['categories']}
     for i, g in enumerate(gb.gradeables):
         gd = {'id':i, 'cid': cat_dict[g.category]['id'], 'name': g.name, 'total_pts': g.total_pts, \
@@ -51,7 +52,8 @@ def course_from_dict(course_dict):
         category_dict[cd['id']]['obj'] = category
         course_obj.categories.append(category)
     for sd in course_dict['students']:
-        student = Student(course_obj, sd['first'], sd['last'], sd['email'], sd['is_active'])
+        student = Student(course_obj, sd['first'], sd['last'], sd['email'], \
+                sd['is_active'], sd['notes'])
         student_dict[sd['id']]['obj'] = student
         course_obj.students.append(student)
     for gd in course_dict['gradeables']:
@@ -77,6 +79,8 @@ def upgrade(course_dict):
         course_dict['schema_version'] = 1
         print("upgraded schema to version 1")
     elif course_dict['schema_version'] == 1:
-        # upgrade from version 1 to version 2
-        pass
+        for s in course_dict['students']:
+            s['notes']=''
+        course_dict['schema_version'] = 2
+        print("upgraded schema to version 1")
 

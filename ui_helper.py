@@ -6,11 +6,11 @@ import subprocess
 def dinput(prompt=">>> "):
     return input(prompt)
 
-def get_string(title, default=None):
+def get_string(title, default=None, is_append=False):
     ftitle = title if default == None else title + " ({})".format(default)
     print(ftitle)
     sval = dinput()
-    return default if default != None and sval == '' else sval
+    return default if default != None and sval == '' and not is_append else sval
 
 def get_bool(title, default=None):
     ftitle = title if default == None else title + \

@@ -62,12 +62,13 @@ def edit_student(gb):
     last = ui.get_string("Enter Last Name", gb.cur_student.last)
     email = ui.get_string("Enter Email", gb.cur_student.email)
     is_active = ui.get_bool("Is the Student Active? (y/n)", gb.cur_student.is_active)
-    notes = ui.get_string("Enter Notes", gb.cur_student.notes)
+    notes = ui.get_string("Append Notes", gb.cur_student.notes)
     gb.cur_student.first = first
     gb.cur_student.last = last
     gb.cur_student.email = email
     gb.cur_student.is_active = is_active
-    gb.cur_student.notes = notes
+    if notes:
+        gb.cur_student.notes += '\n'+notes
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None 
     menus.set_student_options(gb)
@@ -100,9 +101,9 @@ def import_students(gb):
 def export_students(gb):
     try:
         with open('students.txt','w') as f:
-            f.write("First Name\tLast Name\tEmail\tActive?\tHas Scores\n")
-            f.write("\n".join(["{}\t{}\t{}\t{}\t{}".format( \
-                s.first, s.last, s.email, "Y" if s.is_active else "N", \
+            f.write("First Name\tLast Name\tEmail\tNotes\tActive?\tHas Scores\n")
+            f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}".format( \
+                s.first, s.last, s.email, s.notes, "Y" if s.is_active else "N", \
                 "Y" if s.has_scores() else "N") for s in gb.students]))
     except Exception as ex:
         print(ex)

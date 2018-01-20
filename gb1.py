@@ -207,6 +207,7 @@ def input_scores(gb, cg):
         s, q = ss[s_idx], qs[q_idx]
         score = gb.get_score(s, cg, q)
         done, s_idx, q_idx = get_input(score, s, cg, q, s_idx, q_idx)
+    menus.set_reports_gradeable_sel_options
 
 def input_student_scores(gb, s):
     cg = gb.cur_gradeable
@@ -219,6 +220,7 @@ def input_student_scores(gb, s):
         q = qs[q_idx]
         score = gb.get_score(s, cg, q)
         done, q_idx = get_student_input(score, s, cg, q, q_idx)
+    menus.set_reports_gradeable_sel_options   
 
 def handle_limits(s_idx, q_idx, s_ct, q_ct):
     if s_idx <= 0 and q_idx < 0:
@@ -290,6 +292,23 @@ def try_set_score(score, q, value, q_idx):
 #--------
 # Reports
 #--------
+def rpt_graded_item_details_by_student(gb):
+    cg = gb.cur_gradeable
+    names = np.array([s.name() for s in gb.get_actives()])
+    ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
+            for s in gb.get_actives()])
+    tots = ar.sum(1)
+    pcts = tots/cg.total_pts*100.0
+    title="{} Details by Student".format(cg.name)
+    m,n = ar.shape
+    col_headings = ["#{0:d}".format(j+1) for j in range(n)]
+    rpt = SimpleReport(title, name_col_width=16, data_col_width=6, total_col_width=8, \
+            name_col_name='Student', row_headings=names, col_headings=col_headings, \
+            data=ar, total_col=tots, total_col_name = "Total", \
+            pct_col=pcts, has_average_row=True)
+    print(rpt.render())
+    ui.pause()
+
 def rpt_graded_item_details(gb):
     cg = gb.cur_gradeable
     names = np.array([s.name() for s in gb.get_actives()])

@@ -23,6 +23,7 @@ m_reports_gradeable_sel = Menu(title = "Select Graded Item")
 m_reports_gradeable = Menu(title = "Reports on Specific Graded Items")
 m_reports_student_sel = Menu(title = "Select Student")
 m_reports_student = Menu(title = "Reports on Individual Students")
+m_reports_graded_item_details = Menu(title = "Graded Item Detail Reports")
 
 #-------------
 # Menu Helpers
@@ -47,8 +48,7 @@ def set_and_open_student(gb,student):
 
 def set_and_open_reports_gradeable(gb, gradeable):
     gb.set_cur_gradeable(gradeable)
-    # currently only one report in this category so open it directly
-    app.rpt_graded_item_details(gb)
+    m_reports_graded_item_details.open()
     
 def set_and_open_reports_student(gb, student):
     gb.set_cur_student(student)
@@ -179,6 +179,16 @@ def set_reports_options(gb):
     set_reports_gradeable_sel_options(gb)
     set_reports_student_sel_options(gb)
 
+
+def set_report_graded_item_details_options(gb):
+    m_reports_graded_item_details.options = []
+    m_reports_graded_item_details.add_option("Return to Selection Menu", \
+            m_reports_graded_item_details.close)
+    m_reports_graded_item_details.add_option("Details By Score", \
+            lambda : app.rpt_graded_item_details(gb))
+    m_reports_graded_item_details.add_option("Details By Student", \
+            lambda : app.rpt_graded_item_details_by_student(gb))
+
 def set_reports_gradeable_sel_options(gb):
     m_reports_gradeable_sel.options = []
     m_reports_gradeable_sel.add_option("Return to Report Menu", \
@@ -186,7 +196,10 @@ def set_reports_gradeable_sel_options(gb):
     for item in sorted(gb.gradeables_with_scores(), key=lambda i: i.name):
         m_reports_gradeable_sel.add_option(item.name, \
                 lambda i=item : set_and_open_reports_gradeable(gb,i))
-    set_reports_gradeable_options(gb)
+#    set_reports_gradeable_options(gb)
+    set_report_graded_item_details_options(gb)
+
+
 
 def set_reports_student_sel_options(gb):    
     m_reports_student_sel.options = []

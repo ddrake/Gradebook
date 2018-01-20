@@ -103,9 +103,10 @@ def import_students(gb):
 def export_students(gb):
     try:
         with open('students.txt','w') as f:
-            f.write("First Name\tLast Name\tEmail\tNotes\tActive?\tHas Scores\n")
-            f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}".format( \
-                s.first, s.last, s.email, s.notes, "Y" if s.is_active else "N", \
+            f.write("First Name\tLast Name\tEmail\tEst. Grade\tNotes\tActive?\tHas Scores\n")
+            f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}\t{}".format( \
+                s.first, s.last, s.email, ui.num_na_str(s.estimated_grade()), s.notes, \
+                "Y" if s.is_active else "N", \
                 "Y" if s.has_scores() else "N") for s in gb.students]))
     except Exception as ex:
         print(ex)

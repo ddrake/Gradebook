@@ -1,3 +1,5 @@
+import numpy as np
+
 schema_version = 2
 
 class Course:
@@ -101,6 +103,14 @@ class Student:
     def has_scores(self):
         return self in self.course.students_with_scores()
 
+    def estimated_grade(self):
+        cats = self.course.categories_with_scores()
+        if not cats: return 'N/A' if as_text else None
+        pcts = np.array([c.combined_pct(self) for c in cats])
+        weights = np.array([cat.pct_of_grade for cat in cats])
+        adj_weights = weights/sum(weights)
+        return (pcts*adj_weights).sum()
+ 
 class Question:
     def __init__(self, gradeable, points):
         self.gradeable = gradeable

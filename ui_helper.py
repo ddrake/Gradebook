@@ -121,4 +121,6 @@ def open_in_calc(filename):
     except Exception:
         print("Libre Calc may not be available")
 
+def num_na_str(number):
+    return "{0:.1f}".format(number) if number != None else 'N/A'
 

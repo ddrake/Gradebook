@@ -172,10 +172,18 @@ def import_scores(gb):
     try:
         with open('scores.txt','r') as f:
             text = f.read()
+        with open('wa_xref.txt','r') as f:
+            xref_text = f.read()
+        xref_lines = xref_text.strip().split('\n')
+        xref = {}
+        for line in xref_lines:
+            name, email = line.split('\t')
+            xref[name] = email 
+
         lines = text.strip().split('\n')
         for line in lines:
-            email, q1_score = line.split('\t')
-            matches = [s for s in gb.students if s.email == email]
+            name, q1_score = line.split('\t')
+            matches = [s for s in gb.students if s.email == xref[name]]
             if not matches:
                 print("imported email '", email, "' doesn't match any student")
                 continue

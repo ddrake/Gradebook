@@ -196,7 +196,6 @@ def set_reports_gradeable_sel_options(gb):
     for item in sorted(gb.gradeables_with_scores(), key=lambda i: i.name):
         m_reports_gradeable_sel.add_option(item.name, \
                 lambda i=item : set_and_open_reports_gradeable(gb,i))
-#    set_reports_gradeable_options(gb)
     set_report_graded_item_details_options(gb)
 
 

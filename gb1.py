@@ -170,37 +170,44 @@ def import_scores(gb):
     if gb.cur_gradeable.has_scores():
         if not ui.confirm("Delete existing scores?"): return
         gb.cur_gradeable.delete_scores()
-    try:
-        with open('scores.txt','r') as f:
-            text = f.read()
-        with open('wa_xref.txt','r') as f:
-            xref_text = f.read()
-        xref_lines = xref_text.strip().split('\n')
-        xref = {}
-        for line in xref_lines:
-            name, email = line.split('\t')
-            xref[name] = email 
+#    try:
+    with open('scores.txt','r') as f:
+        text = f.read()
+    with open('wa_xref.txt','r') as f:
+        xref_text = f.read()
+    xref_lines = xref_text.strip().split('\n')
+    xref = {}
+    for line in xref_lines:
+        name, email = line.split('\t')
+        xref[name] = email 
+    lines = text.strip().split('\n')
+    for line in lines:
+        name, q1_score = line.split('\t')
+        if name[0] == '"':
+            name = name[1:-1] # remove quotes (if any)
+        if name not in xref:
+            print(name, " is not in the xref dict")
+            continue
+        matches = [s for s in gb.students if s.email == xref[name]]
+        if not matches:
+            print("imported email '", email, "' doesn't match any student")
+            continue
+        if len(matches) > 1:
+            print("imported email '", email, "' matches more than one student???")
+            continue
+        student = matches[0]
+        score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
+        score.value = float(q1_score)
+    menus.set_reports_gradeable_sel_options(gb)
+    menus.set_reports_student_sel_options(gb)
+    menus.set_gradeable_options(gb)
 
-        lines = text.strip().split('\n')
-        for line in lines:
-            name, q1_score = line.split('\t')
-            matches = [s for s in gb.students if s.email == xref[name]]
-            if not matches:
-                print("imported email '", email, "' doesn't match any student")
-                continue
-            if len(matches) > 1:
-                print("imported email '", email, "' matches more than one student???")
-                continue
-            student = matches[0]
-            score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
-            score.value = float(q1_score)
-        menus.set_reports_gradeable_sel_options(gb)
-        menus.set_reports_student_sel_options(gb)
-    except Exception as err:
-        print("The file 'scores.txt' could not be found or was incorrectly formatted")
-        print(err)
-    finally:
-        ui.pause()
+    ui.pause()
+#except Exception as err:
+#        print("The file 'scores.txt' could not be found or was incorrectly formatted")
+#        print(err)
+#    finally:
+#        ui.pause()
 
 #------------
 # Score Entry

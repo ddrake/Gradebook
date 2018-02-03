@@ -1,6 +1,6 @@
 import numpy as np
 
-schema_version = 2
+schema_version = 3
 
 class Course:
     def __init__(self, name = '', term = ''):
@@ -84,6 +84,11 @@ class Course:
         return self.name.replace(' ','_') + "_" \
                + self.term.replace(' ','_') + ".json"
 
+    def hope_factor(self):
+        s = sum([(c.est_ct - c.actual_ct())/c.est_ct * c.pct_of_grade/100.0 \
+                    for c in self.categories if c.est_ct - c.actual_ct() > 0])
+        return 1/s if s > 0 else None
+
 class Student:
     def __init__(self, course, first = '', last = '', email = '', \
             is_active=1, notes=''):
@@ -111,17 +116,36 @@ class Student:
         adj_weights = weights/sum(weights)
         return (pcts*adj_weights).sum()
  
+    def partial_est_grade(self):
+        cats = self.course.categories_with_scores()
+        if not cats: return None
+        pcts = np.array([c.combined_pct(self) for c in cats])
+        weights = np.array([c.pct_of_grade for c in cats])
+        act_cts = np.array([c.actual_ct() for c in cats])
+        est_cts = np.array([c.est_ct for c in cats])
+        return (pcts*weights/100.0*act_cts/est_cts).sum()
+
+    def avg_score_needed_for_grade(self, grade):
+        hf = self.course.hope_factor()
+        if hf == None: return None
+        return (grade - self.partial_est_grade()) * hf
+
 class Question:
     def __init__(self, gradeable, points):
         self.gradeable = gradeable
         self.points = points
 
 class Category:
-    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0):
+    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0, est_ct=0):
         self.course = course
         self.name = name
         self.pct_of_grade = pct_of_grade
-        self.drop_low_n = drop_low_n 
+        self.drop_low_n = drop_low_n
+        self.est_ct = est_ct  # the estimate number of gradeables in the category
+
+    def actual_ct(self):
+        gs = self.gradeables_with_scores()
+        return 1 if any(g for g in gs if g.sub_pct !=0) else len(gs)
 
     def combined_pct(self, student):
         gs = self.gradeables_with_scores()

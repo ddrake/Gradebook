@@ -224,6 +224,8 @@ def set_reports_student_options(gb):
             lambda : app.rpt_student_summary_line(gb))
     m_reports_student.add_option("Student Scores Email", \
             lambda : app.rpt_student_summary_line(gb,send_email=True))
+    m_reports_student.add_option("Score Needed for Grade", \
+            lambda : app.rpt_avg_score_needed_for_grade(gb))
 
 #------------------------
 # main menu logic

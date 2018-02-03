@@ -15,7 +15,7 @@ def save(gb, file_name):
 def course_to_dict(gb):
     course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, 'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
-            'drop_low_n': c.drop_low_n, 'obj': c} for i, c in enumerate(gb.categories)]
+            'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'obj': c} for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
             'email': s.email, 'is_active': s.is_active,'notes': s.notes, 'obj': s} \
             for i, s in enumerate(gb.students)]
@@ -48,7 +48,7 @@ def course_from_dict(course_dict):
 
     course_obj = Course(course_dict['name'], course_dict['term'])
     for cd in course_dict['categories']:
-        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'])
+        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], cd['est_ct'])
         category_dict[cd['id']]['obj'] = category
         course_obj.categories.append(category)
     for sd in course_dict['students']:
@@ -82,5 +82,10 @@ def upgrade(course_dict):
         for s in course_dict['students']:
             s['notes']=''
         course_dict['schema_version'] = 2
-        print("upgraded schema to version 1")
+        print("upgraded schema to version 2")
+    elif course_dict['schema_version'] == 2:
+        for c in course_dict['categories']:
+            c['est_ct']=0
+        course_dict['schema_version'] = 3
+        print("upgraded schema to version 3")
 

@@ -27,7 +27,8 @@ def add_category(gb):
     name = ui.get_string("Enter Category Name")
     pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100)
     drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, 0)
-    cat = Category(gb, name, pct_of_grade, drop_low_n)
+    est_ct = ui.get_valid_int("Estimated Items", 0, 100, 0)
+    cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
@@ -35,8 +36,10 @@ def edit_category(gb):
     name = ui.get_string("Enter Category Name", gb.cur_category.name)
     pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
     gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
+    est_ct = ui.get_valid_int("Estimated Items", 0, 100, gb.cur_category.est_ct)
     gb.cur_category.name = name or gb.cur_category.name
     gb.cur_category.pct_of_grade = pct_of_grade
+    gb.cur_category.est_ct = est_ct
     menus.set_category_options(gb)
 
 def delete_category(gb):
@@ -170,44 +173,42 @@ def import_scores(gb):
     if gb.cur_gradeable.has_scores():
         if not ui.confirm("Delete existing scores?"): return
         gb.cur_gradeable.delete_scores()
-#    try:
-    with open('scores.txt','r') as f:
-        text = f.read()
-    with open('wa_xref.txt','r') as f:
-        xref_text = f.read()
-    xref_lines = xref_text.strip().split('\n')
-    xref = {}
-    for line in xref_lines:
-        name, email = line.split('\t')
-        xref[name] = email 
-    lines = text.strip().split('\n')
-    for line in lines:
-        name, q1_score = line.split('\t')
-        if name[0] == '"':
-            name = name[1:-1] # remove quotes (if any)
-        if name not in xref:
-            print(name, " is not in the xref dict")
-            continue
-        matches = [s for s in gb.students if s.email == xref[name]]
-        if not matches:
-            print("imported email '", email, "' doesn't match any student")
-            continue
-        if len(matches) > 1:
-            print("imported email '", email, "' matches more than one student???")
-            continue
-        student = matches[0]
-        score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
-        score.value = float(q1_score)
-    menus.set_reports_gradeable_sel_options(gb)
-    menus.set_reports_student_sel_options(gb)
-    menus.set_gradeable_options(gb)
-
-    ui.pause()
-#except Exception as err:
-#        print("The file 'scores.txt' could not be found or was incorrectly formatted")
-#        print(err)
-#    finally:
-#        ui.pause()
+    try:
+        with open('scores.txt','r') as f:
+            text = f.read()
+        with open('wa_xref.txt','r') as f:
+            xref_text = f.read()
+        xref_lines = xref_text.strip().split('\n')
+        xref = {}
+        for line in xref_lines:
+            name, email = line.split('\t')
+            xref[name] = email 
+        lines = text.strip().split('\n')
+        for line in lines:
+            name, q1_score = line.split('\t')
+            if name[0] == '"':
+                name = name[1:-1] # remove quotes (if any)
+            if name not in xref:
+                print(name, " is not in the xref dict")
+                continue
+            matches = [s for s in gb.students if s.email == xref[name]]
+            if not matches:
+                print("imported email '", email, "' doesn't match any student")
+                continue
+            if len(matches) > 1:
+                print("imported email '", email, "' matches more than one student???")
+                continue
+            student = matches[0]
+            score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
+            score.value = float(q1_score)
+        menus.set_reports_gradeable_sel_options(gb)
+        menus.set_reports_student_sel_options(gb)
+        menus.set_gradeable_options(gb)
+    except Exception as err:
+        print("The file 'scores.txt' could not be found or was incorrectly formatted")
+        print(err)
+    finally:
+        ui.pause()
 
 #------------
 # Score Entry
@@ -430,6 +431,21 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
     grade = (pcts*adj_weights).sum()
     student_summary_line_body(student, grade, cats, pcts, send_email) 
     ui.pause()
+
+def rpt_avg_score_needed_for_grade(gb):
+    done = False
+    while not done:
+        print("Enter desired grade or 'Q' to quit")
+        resp = ui.dinput()
+        if resp.upper() == 'Q':
+            done = True
+        else:
+            try:
+                fval = float(resp)
+                score = gb.cur_student.avg_score_needed_for_grade(fval)
+                print("Average score needed is: {0:.1f}".format(score))
+            except ValueError:
+                pass
 
 # Display or Email current grade status to all active students
 def rpt_class_summary_line(gb, send_email=False):

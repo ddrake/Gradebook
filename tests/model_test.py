@@ -4,8 +4,8 @@ from model import *
 
 def setup():
     gb = Course('Math','Fall 2017')
-    joe = Student('Joe', 'Davis', 'joe@pdx.edu')
-    mary = Student('Mary', 'Wilcox', 'm2w@pdx.edu')
+    joe = Student(gb, 'Joe', 'Davis', 'joe@pdx.edu')
+    mary = Student(gb, 'Mary', 'Wilcox', 'm2w@pdx.edu')
     gb.students.append(joe)
     gb.students.append(mary)
     quizzes = Category(gb, 'Quizzes', 25)
@@ -93,3 +93,74 @@ def test_gradeables_with_scores():
     quiz2 = gb.gradeables[1]
     gb.remove_gradeable(quiz2)
     assert len(gb.gradeables_with_scores()) == 3
+
+def setup_simple():
+    gb = Course('Math','Fall 2017')
+    joe = Student(gb, 'Joe', 'Davis', 'joe@pdx.edu')
+    gb.students.append(joe)
+    homework = Category(gb, 'Homework', 100, 0, 3)
+    gb.categories.append(homework)
+    hw1 = Gradeable(gb, 'HW1', homework, 15)
+    hw1.add_question(15)
+    gb.gradeables.append(hw1)
+
+    s = gb.get_score(joe, hw1, hw1.questions[0])
+    s.value = 1
+    return gb
+
+def test_rpt_avg_score_needed_for_grade():
+    gb = setup_simple()
+    joe = gb.students[0]
+    assert abs(joe.avg_score_needed_for_grade(90) - (90*3-100/15)/2) < .00001
+
+def test_rpt_avg_score_needed_for_grade2():
+    gb = setup_simple()
+    joe = gb.students[0]
+    hw1 = gb.gradeables[0]
+    s = gb.get_score(joe, hw1, hw1.questions[0])
+    s.value = 15
+
+
+def setup_simple2():
+    gb = Course('Math','Fall 2017')
+    joe = Student(gb, 'Joe', 'Davis', 'joe@pdx.edu')
+    gb.students.append(joe)
+    homework = Category(gb, 'Homework', 40, 0, 3)
+    exam1 = Category(gb, 'Exam1', 20, 0, 1)
+    final = Category(gb, 'Final', 30, 0, 1)
+    gb.categories.append(homework)
+    gb.categories.append(exam1)
+    gb.categories.append(final)
+    hw1 = Gradeable(gb, 'HW1', homework, 15)
+    hw1.add_question(15)
+    ex1 = Gradeable(gb, 'Exam1', exam1, 100)
+    ex1.add_question(100)
+    finl = Gradeable(gb, 'Final', final, 100)
+    finl.add_question(100)
+
+    gb.gradeables.append(hw1)
+    gb.gradeables.append(ex1)
+    gb.gradeables.append(finl)
+
+    s = gb.get_score(joe, hw1, hw1.questions[0])
+    s.value = 1
+    s = gb.get_score(joe, ex1, ex1.questions[0])
+    s.value = 25
+    return gb
+
+def test_rpt_avg_score_needed_for_grade3():
+    gb = setup_simple2()
+    hw, ex1, finl = gb.categories
+    assert hw.actual_ct() == 1
+    assert ex1.actual_ct() == 1
+    assert finl.actual_ct() == 0
+    hope_factor = 1/(0.40*(2/3) + 0.3)
+    assert abs(gb.hope_factor() - hope_factor) < .00001
+    joe = gb.students[0]
+    cats = gb.categories_with_scores()
+    assert len(cats) == 2
+    partial_est = (.40*(1/3)*(1/15*100) + .20*(1/1)*25)
+    assert abs(joe.partial_est_grade() - partial_est) < .00001
+    expected = (90 - partial_est)*hope_factor
+    assert abs(joe.avg_score_needed_for_grade(90) - (90 - partial_est)*hope_factor) < .00001
+

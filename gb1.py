@@ -443,7 +443,10 @@ def rpt_avg_score_needed_for_grade(gb):
             try:
                 fval = float(resp)
                 score = gb.cur_student.avg_score_needed_for_grade(fval)
-                print("Average score needed is: {0:.1f}".format(score))
+                if score is None:
+                    print("Unable to compute average score needed.\nEstimated counts must be set for categories.")
+                else:
+                    print("Average score needed is: {0:.1f}".format(score))
             except ValueError:
                 pass
 

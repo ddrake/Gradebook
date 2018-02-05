@@ -110,7 +110,7 @@ class Student:
 
     def estimated_grade(self):
         cats = self.course.categories_with_scores()
-        if not cats: return 'N/A' if as_text else None
+        if not cats: return None
         pcts = np.array([c.combined_pct(self) for c in cats])
         weights = np.array([cat.pct_of_grade for cat in cats])
         adj_weights = weights/sum(weights)

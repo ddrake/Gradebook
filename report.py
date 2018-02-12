@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt 
 
 def plot_hist(pcts, title):
-    h=np.histogram(pcts,bins=(0,60,70,80,90,100))
+    h=np.histogram(pcts,bins=(0,60,70,80,90,200))
     barlist = plt.bar(range(5),h[0],width=0.85)
     colors = ['#ff0000', '#ff8000', '#ffff00', '#0080ff','#00ff00']
     for i in range(5):

@@ -474,7 +474,7 @@ def save_and_exit(gb):
     menus.m_main.close()
    
 def save_current(gb):
-    save(gb, gb.file_name())
+    persist.save(gb, gb.file_name())
 
 #-------------
 # Main Program

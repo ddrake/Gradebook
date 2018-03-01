@@ -314,8 +314,8 @@ def rpt_graded_item_details_by_student(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
             for s in gb.get_actives()])
-    tots = ar.sum(1)
-    pcts = tots/cg.total_pts*100.0
+    tots = ar.sum(1)+cg.added_pts
+    pcts = tots/cg.total_pts*100.0 + cg.added_pct
     title="{} Details by Student".format(cg.name)
     m,n = ar.shape
     col_headings = ["#{0:d}".format(j+1) for j in range(n)]
@@ -331,8 +331,9 @@ def rpt_graded_item_details(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
             for s in gb.get_actives()])
-    tots = ar.sum(1)
-    pcts = tots/cg.total_pts*100.0
+    tots = ar.sum(1)+cg.added_pts
+    print(cg.added_pts)
+    pcts = tots/cg.total_pts*100.0 + cg.added_pct
     title="{} Details".format(cg.name)
     plot_hist(pcts,title)
     totinds = tots.argsort()

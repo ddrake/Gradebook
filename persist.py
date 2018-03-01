@@ -22,7 +22,7 @@ def course_to_dict(gb):
     cat_dict = {item['obj']: item for item in course['categories']}
     for i, g in enumerate(gb.gradeables):
         gd = {'id':i, 'cid': cat_dict[g.category]['id'], 'name': g.name, 'total_pts': g.total_pts, \
-                'sub_pct': g.sub_pct, 'added_pts': g.added_pct, 'added_pct': g.added_pct, 'questions': []}
+                'sub_pct': g.sub_pct, 'added_pts': g.added_pts, 'added_pct': g.added_pct, 'questions': []}
         for j, q in enumerate(g.questions):
             gd['questions'].append( {'id':j, 'gid': i, 'points': q.points} )
             for sd in course['students']:

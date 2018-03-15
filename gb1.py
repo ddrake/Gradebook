@@ -470,6 +470,19 @@ def rpt_class_summary_line(gb, send_email=False):
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
     ui.pause()
 
+def rpt_student_scores(gb):
+    students = gb.get_actives()
+    for student in students:
+        print(student.name())
+        for cat in gb.categories_with_scores():
+            print("  ", cat.name)
+            gs = sorted((g for g in gb.gradeables if g.category is cat), key=lambda g: g.name)
+            for g in gs:
+                print("    ", g.name," ",g.adjusted_score(student)/g.total_pts*100)
+        print()
+    ui.pause()
+
+    gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
 def save_and_exit(gb):
     persist.save(gb, gb.file_name())
     menus.m_main.close()

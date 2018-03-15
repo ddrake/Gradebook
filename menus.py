@@ -174,11 +174,11 @@ def set_reports_options(gb):
     m_reports.add_option("Class Summary Lines", lambda:app.rpt_class_summary_line(gb))
     m_reports.add_option("Class Summary Email ALL Students", \
             lambda:app.rpt_class_summary_line(gb, send_email=True))
+    m_reports.add_option("Student Scores", lambda:app.rpt_student_scores(gb))
     m_reports.add_option("Student Reports", m_reports_student_sel.open)
     m_reports.add_option("Graded Item Reports", m_reports_gradeable_sel.open)
     set_reports_gradeable_sel_options(gb)
     set_reports_student_sel_options(gb)
-
 
 def set_report_graded_item_details_options(gb):
     m_reports_graded_item_details.options = []
@@ -197,8 +197,6 @@ def set_reports_gradeable_sel_options(gb):
         m_reports_gradeable_sel.add_option(item.name, \
                 lambda i=item : set_and_open_reports_gradeable(gb,i))
     set_report_graded_item_details_options(gb)
-
-
 
 def set_reports_student_sel_options(gb):    
     m_reports_student_sel.options = []

@@ -478,7 +478,7 @@ def rpt_student_scores(gb):
             print("  ", cat.name)
             gs = sorted((g for g in gb.gradeables if g.category is cat), key=lambda g: g.name)
             for g in gs:
-                print("    ", g.name," ",g.adjusted_score(student)/g.total_pts*100)
+                print("    {0} {1:.1f}".format(g.name,g.adjusted_score(student)/g.total_pts*100))
         print()
     ui.pause()
 

@@ -470,17 +470,41 @@ def rpt_class_summary_line(gb, send_email=False):
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
     ui.pause()
 
-def rpt_student_scores(gb):
+def rpt_student_scores(gb, preview=False, send_email=False):
     students = gb.get_actives()
     for student in students:
-        print(student.name())
-        for cat in gb.categories_with_scores():
-            print("  ", cat.name)
-            gs = sorted((g for g in gb.gradeables if g.category is cat), key=lambda g: g.name)
-            for g in gs:
-                print("    {0} {1:.1f}".format(g.name,g.adjusted_score(student)/g.total_pts*100))
-        print()
+        text = student_score_text(gb, student)
+        if not send_email and not preview:
+            print(student.name())
+            print(text)
+        else:
+            salutation = "Hi {},\n\n".format(student.first)
+            salutation += "Here are the scores I have recorded for you.  Please let me know if you find any errors: \n\n"
+            body = salutation + text
+            if preview:
+                print(body)
+            else:
+                try:
+                    g = gmail.Gmail("Recorded Scores", '')
+                    signature = g.signature 
+                    g.body = body + '\n\n' + signature
+                    print(student.email)
+                    print(g.body)
+                    g.recipients = [student.email]
+                    g.send()
+                except:
+                    print("failed to send the email.  ", \
+                            "Perhaps there is something wrong with the signature file.")
     ui.pause()
+
+def student_score_text(gb, student):
+    out = ""
+    for cat in gb.categories_with_scores():
+        out += "  {}\n".format(cat.name)
+        gs = sorted((g for g in gb.gradeables if g.category is cat), key=lambda g: g.name)
+        for g in gs:
+            out += "    {0} {1:.1f}\n".format(g.name,g.adjusted_score(student)/g.total_pts*100)
+    return out
 
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
 def save_and_exit(gb):

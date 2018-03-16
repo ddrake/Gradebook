@@ -175,6 +175,8 @@ def set_reports_options(gb):
     m_reports.add_option("Class Summary Email ALL Students", \
             lambda:app.rpt_class_summary_line(gb, send_email=True))
     m_reports.add_option("Student Scores", lambda:app.rpt_student_scores(gb))
+    m_reports.add_option("Student Scores Preview", lambda:app.rpt_student_scores(gb, preview=True))
+    m_reports.add_option("Student Scores Email All Students", lambda:app.rpt_student_scores(gb, send_email=True))
     m_reports.add_option("Student Reports", m_reports_student_sel.open)
     m_reports.add_option("Graded Item Reports", m_reports_gradeable_sel.open)
     set_reports_gradeable_sel_options(gb)

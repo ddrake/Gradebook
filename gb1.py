@@ -176,39 +176,43 @@ def import_scores(gb):
     try:
         with open('scores.txt','r') as f:
             text = f.read()
-        with open('wa_xref.txt','r') as f:
-            xref_text = f.read()
-        xref_lines = xref_text.strip().split('\n')
-        xref = {}
-        for line in xref_lines:
-            name, email = line.split('\t')
-            xref[name] = email 
+        scores = []        
         lines = text.strip().split('\n')
-        for line in lines:
-            name, q1_score = line.split('\t')
-            if name[0] == '"':
-                name = name[1:-1] # remove quotes (if any)
-            if name not in xref:
-                print(name, " is not in the xref dict")
-                continue
-            matches = [s for s in gb.students if s.email == xref[name]]
-            if not matches:
-                print("imported email '", email, "' doesn't match any student")
-                continue
-            if len(matches) > 1:
-                print("imported email '", email, "' matches more than one student???")
-                continue
-            student = matches[0]
-            score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
-            score.value = float(q1_score)
-        menus.set_reports_gradeable_sel_options(gb)
-        menus.set_reports_student_sel_options(gb)
-        menus.set_gradeable_options(gb)
+        scores = [line.split('\t') for line in lines]
     except Exception as err:
         print("The file 'scores.txt' could not be found or was incorrectly formatted")
         print(err)
-    finally:
         ui.pause()
+    try:
+        with open('wa_xref.txt','r') as f:
+            xref_text = f.read()
+        xref_list = [line.split('\t') for line in xref_text.strip().split('\n') ]
+        xref = {name: email for name, email in xref_list}
+    except Exception as err:
+        print("The file 'wa_xref.txt' could not be found or was incorrectly formatted")
+        print(err)
+        ui.pause()
+
+    for [name, q1_score] in scores:
+        if name[0] == '"':
+            name = name[1:-1] # remove quotes (if any)
+        if name not in xref:
+            print(name, " is not in the xref dict")
+            continue
+        matches = [s for s in gb.students if s.email == xref[name]]
+        if not matches:
+            print("imported email '", email, "' doesn't match any student")
+            continue
+        if len(matches) > 1:
+            print("imported email '", email, "' matches more than one student???")
+            continue
+        student = matches[0]
+        score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
+        score.value = float(q1_score)
+    menus.set_reports_gradeable_sel_options(gb)
+    menus.set_reports_student_sel_options(gb)
+    menus.set_gradeable_options(gb)
+    ui.pause()
 
 #------------
 # Score Entry

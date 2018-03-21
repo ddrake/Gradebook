@@ -201,10 +201,10 @@ def import_scores(gb):
             continue
         matches = [s for s in gb.students if s.email == xref[name]]
         if not matches:
-            print("imported email '", email, "' doesn't match any student")
+            print("imported name '", name, "' doesn't match any student")
             continue
         if len(matches) > 1:
-            print("imported email '", email, "' matches more than one student???")
+            print("imported name '", name, "' matches more than one student???")
             continue
         student = matches[0]
         score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])

@@ -105,6 +105,9 @@ class Student:
     def fullname(self):
         return self.first + ' ' + self.last
         
+    def lastfirst(self):
+        return self.last + ', ' + self.first
+
     def has_scores(self):
         return self in self.course.students_with_scores()
 

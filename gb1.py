@@ -169,50 +169,72 @@ def delete_gradeable(gb):
     menus.set_gradeable_options(gb)
     menus.m_gradeable_edit_del.close()
 
+# Looks for a online_scores.txt file with downloaded scores containing last-first names
+# and overall assignment scores.  If not found, import fails.  
+# Next looks for optional online_xref.txt file. If found, this file should contain 
+# last-first names matching those in online_scores.txt and emails matching those in gradebook.
+# In this case, students are matched by cross referencing.
+# If no online_xref.txt file is found, students are matched by upcased last-first names.
 def import_scores(gb):
     if gb.cur_gradeable.has_scores():
         if not ui.confirm("Delete existing scores?"): return
         gb.cur_gradeable.delete_scores()
     try:
-        with open('scores.txt','r') as f:
+        with open('online_scores.txt','r') as f:
             text = f.read()
         scores = []        
         lines = text.strip().split('\n')
         scores = [line.split('\t') for line in lines]
     except Exception as err:
-        print("The file 'scores.txt' could not be found or was incorrectly formatted")
+        print("The file 'online_scores.txt' could not be found or was incorrectly formatted")
         print(err)
         ui.pause()
     try:
-        with open('wa_xref.txt','r') as f:
+        with open('online_xref.txt','r') as f:
             xref_text = f.read()
-        xref_list = [line.split('\t') for line in xref_text.strip().split('\n') ]
-        xref = {name: email for name, email in xref_list}
-    except Exception as err:
-        print("The file 'wa_xref.txt' could not be found or was incorrectly formatted")
-        print(err)
-        ui.pause()
+    except:
+        pass
+    else:
+        try:
+            xref_list = [line.split('\t') for line in xref_text.strip().split('\n') ]
+            xref = {name: email for name, email in xref_list}
+        except Exception as err:
+            print("The file 'online_xref.txt' was incorrectly formatted")
+            print(err)
+            ui.pause()
 
+    update_scores(gb, scores, xref)
+
+    menus.set_reports_gradeable_sel_options(gb)
+    menus.set_reports_student_sel_options(gb)
+    menus.set_gradeable_options(gb)
+    ui.pause()
+
+def update_scores(gb, scores, xref):
     for [name, q1_score] in scores:
         if name[0] == '"':
             name = name[1:-1] # remove quotes (if any)
-        if name not in xref:
-            print(name, " is not in the xref dict")
-            continue
-        matches = [s for s in gb.students if s.email == xref[name]]
+        if xref:
+            if name not in xref:
+                print(name, " is not in the xref dict")
+                continue
+            matches = [s for s in gb.students if s.email == xref[name]]
+        else:
+            matches = [s for s in gb.students if s.lastfirst == name]
         if not matches:
             print("imported name '", name, "' doesn't match any student")
             continue
         if len(matches) > 1:
             print("imported name '", name, "' matches more than one student???")
             continue
+        if not matches:
+            print("")
+
         student = matches[0]
         score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
         score.value = float(q1_score)
-    menus.set_reports_gradeable_sel_options(gb)
-    menus.set_reports_student_sel_options(gb)
-    menus.set_gradeable_options(gb)
-    ui.pause()
+
+
 
 #------------
 # Score Entry

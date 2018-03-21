@@ -10,6 +10,8 @@ To open Gradebook for a specific saved course named "Math 251" in the term "Fall
 
 ```$ ./gb1 Math_251_Fall_2018.json```  
 
+Note: See the 'gb' script in the utils folder for an example of how to save keystrokes by starting the application with a specific course and automatically back up the data file to cloud storage using rclone.
+
 ### New Course Setup
 You can create a new course simply by running the application without specifying a file.  You should see a menu like this:
 
@@ -61,7 +63,7 @@ If part of the students' grade is determined by scores that are reccorded in ano
 
 The tab-separated scores file to be imported must be named online_scores.txt and located in the application folder, and must match the layout of the 'online_scores.txt.sample' file provided in this repository.  Often students may type their names differently when registering for the online course and use email addresses different from their university emails.  To get around this, you can create anoptional 'online_xref.txt' file with two columns.  The first column must contain the student's full name (last, first) as they have entered it in the online course.  The second column must contain the student's email address as set up in the gradebook application.  
 
-See the documentation in the 'utils' folder for how to modify and use some useful scripts for exporting data from Webassign so it can be easily imported into Gadebook.
+See the documentation in the 'utils' folder for how to modify and use some useful scripts for exporting data from Webassign so it can be easily imported into Gradebook.
 
 ### Reporting
 

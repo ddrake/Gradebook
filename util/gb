@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+cd gradebook
+cp Math_251_Winter_2018.json bak.json
+./gb1.py Math_251_Winter_2018.json
+rclone copy Math_251_Winter_2018.json psudrive: -c

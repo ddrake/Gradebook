@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+import io
+import sys
+from collections import defaultdict
+import time
+import numpy as np
+
+def get_credentials():
+    with open('wa_credentials.txt','r') as f:
+        contents = f.read()
+    d = dict(l.split(':') for l in contents.strip().split('\n'))
+    return d
+
+def get_scores():
+    url = "https://www.webassign.net/wa-auth/login"
+    d = get_credentials()
+    driver = webdriver.Firefox()
+    time.sleep(2)
+    driver.get(url)
+    temp = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.NAME, "email")))
+    time.sleep(2)
+    elem = driver.find_element_by_name("email")
+    elem.clear()
+    elem.send_keys(d['email'])
+    elem = driver.find_element_by_name("password")
+    elem.clear()
+    elem.send_keys(d['password'])
+    elem.send_keys(Keys.RETURN)
+    elem = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.LINK_TEXT, "Class Scores")))
+    driver.execute_script("document.getElementById('list').children[4].children[1].children[2].children[0].click()")   
+    temp = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.ID,"scourse")))
+    select = Select(driver.find_element_by_id("scourse"))
+    select.select_by_value(d['course'])
+    temp = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.ID,"assignmentDateSelector")))
+    select = Select(driver.find_element_by_id("assignmentDateSelector"))
+    select.select_by_value("all")
+    time.sleep(1)
+    elem = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.LINK_TEXT,"Downloads")))
+    time.sleep(2)
+    elem.click()
+    window_before = driver.window_handles[0]
+    driver.switch_to_window("Downloads")
+    temp = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.ID,"filetype")))
+    select = Select(driver.find_element_by_id("filetype"))
+    select.select_by_value("tsv")
+    driver.find_element_by_link_text("Download").click()
+    elem = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.CSS_SELECTOR,'pre')))
+    results = elem.get_attribute('innerHTML')
+    driver.switch_to_window(window_before)
+    driver.quit()
+    return results
+
+def try_parse_float(n):
+    try:
+        return float(n)
+    except ValueError:
+        return 0.0
+
+def sumvalid(list):
+    sum = 0
+    for n in list:
+        sum += try_parse_float(n)
+    return sum
+
+# Main script
+# the number of columns (sections) for each assignment
+# Note: this is likely to change from term to term
+hw_cols = [0,4,3,3,3,4,3,4,4] # 0th element is a dummy value
+
+try:
+    assign_num = int(sys.argv[1])
+except IndexError:
+    print("Please specify the assignment number")
+    sys.exit(0)
+
+results = get_scores()
+with open('raw_scores.txt','w') as f:
+    f.write(results)
+
+cumsum = np.cumsum(hw_cols)
+lines = results.strip().split('\n')
+# discard 9 header rows and last row (teacher scores)
+lines = lines[9:-1] 
+rows = [l.split('\t') for l in lines]
+cols = list(map(list,zip(*rows)))
+names = cols[0]
+
+scores = cols[5+cumsum[assign_num-1]:5+cumsum[assign_num]]
+scores = list(map(list,zip(*scores)))
+totals = [sumvalid(stud) for stud in scores]
+out_lines = ["{}\t{}".format(names[i], totals[i]) for i in range(len(names))]
+with open('online_scores.txt','w') as f:
+    f.write('\n'.join(out_lines))
+
+
+

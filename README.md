@@ -59,7 +59,9 @@ If you make an invalid entry, such as a typo, or entering a score for a question
 
 If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall Webassign total can be imported into an existing graded item with a single question representing the total possible points.
 
-The tab-separated scores file to be imported must be named scores.txt and located in the application folder, and must match the layout of the 'scores.txt.sample' file provided in this repository.
+The tab-separated scores file to be imported must be named online_scores.txt and located in the application folder, and must match the layout of the 'online_scores.txt.sample' file provided in this repository.  Often students may type their names differently when registering for the online course and use email addresses different from their university emails.  To get around this, you can create anoptional 'online_xref.txt' file with two columns.  The first column must contain the student's full name (last, first) as they have entered it in the online course.  The second column must contain the student's email address as set up in the gradebook application.  
+
+See the documentation in the 'utils' folder for how to modify and use some useful scripts for exporting data from Webassign so it can be easily imported into Gadebook.
 
 ### Reporting
 
@@ -70,6 +72,7 @@ The reporting capabilities include the following:
 * Class Summary: This groups the graded items into categories and displays the weight for each category.  Unlike the Graded Item Details and Class Details reports, this report is able to apply the special summarization features, such as dropping the lowest quiz or combining the midterm scores with the retake scores.
 * Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.  All you need to do to make this work is rename the file 'gmail_credentials.txt.sample' to 'gmail_credentials.txt', edit it to include your personal gmail account information and signature, and move it to the application directory.
 * Average score needed for grade:  This helps to answer the perennial questions: What do I need to score on future assignments to a) get an A, b) pass the class.  This needs some improvements, but is a pretty good estimate.  For example, it does not currently account for dropping the lowest quiz score.  For this to work correctly, you need to set the "Estimated Items" for each category.
+* Student scores:  This report simply lists the scores for a student for each graded item.  It groups by category and sorts by the graded item name.  This report can be emailed to each student to let them know what grades you have recorded for them so that any errors can be corrected before the final grade is posted.
 
 A histogram with letter grade bins pops up for each of the first three reports.
 

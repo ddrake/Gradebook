@@ -2,6 +2,25 @@
 import numpy as np
 import sys
 
+# the number of columns (sections) for each assignment
+# Note: this is likely to change from term to term
+# If you change this, you should also change it in 'wa'
+hw_cols = [0,4,3,3,3,4,3,4,4] # 0th element is a dummy value
+cumsum = np.cumsum(hw_cols)
+lines = content.strip().split('\n')
+# discard 9 header rows and last row (teacher scores)
+lines = lines[9:-1] 
+rows = [l.split('\t') for l in lines]
+cols = list(map(list,zip(*rows)))
+names = cols[0]
+
+scores = cols[5+cumsum[assign_num-1]:5+cumsum[assign_num]]
+scores = list(map(list,zip(*scores)))
+totals = [sumvalid(stud) for stud in scores]
+out_lines = ["{}\t{}".format(names[i], totals[i]) for i in range(len(names))]
+with open('online_scores.txt','w') as f:
+    f.write('\n'.join(out_lines))
+
 def try_parse_float(n):
     try:
         return float(n)
@@ -23,21 +42,4 @@ except IndexError:
     print("Please specify the assignment number")
     sys.exit(0)
 
-# the number of columns (sections) for each assignment
-# Note: this is likely to change from term to term
-hw_cols = [0,4,3,3,3,4,3,4,4] # 0th element is a dummy value
-cumsum = np.cumsum(hw_cols)
-lines = content.strip().split('\n')
-# discard 9 header rows and last row (teacher scores)
-lines = lines[9:-1] 
-rows = [l.split('\t') for l in lines]
-cols = list(map(list,zip(*rows)))
-names = cols[0]
-
-scores = cols[5+cumsum[assign_num-1]:5+cumsum[assign_num]]
-scores = list(map(list,zip(*scores)))
-totals = [sumvalid(stud) for stud in scores]
-out_lines = ["{}\t{}".format(names[i], totals[i]) for i in range(len(names))]
-with open('online_scores.txt','w') as f:
-    f.write('\n'.join(out_lines))
 

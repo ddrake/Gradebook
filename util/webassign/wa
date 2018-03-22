@@ -9,7 +9,39 @@ import io
 import sys
 from collections import defaultdict
 import time
-import numpy as np
+
+# the number of columns (sections) for each assignment
+# Note: this is likely to change from term to term
+# If you change this, you should also change it in 'wa_scores_from_raw'
+hw_cols = [0,4,3,3,3,4,3,4,4] # 0th element is a dummy value
+
+try:
+    assign_num = int(sys.argv[1])
+except IndexError:
+    print("Please specify the assignment number")
+    sys.exit(0)
+
+results = get_scores()
+with open('raw_scores.txt','w') as f:
+    f.write(results)
+
+cumsum = np.cumsum(hw_cols)
+lines = results.strip().split('\n')
+# discard 9 header rows and last row (teacher scores)
+lines = lines[9:-1] 
+rows = [l.split('\t') for l in lines]
+cols = list(map(list,zip(*rows)))
+names = cols[0]
+
+scores = cols[5+cumsum[assign_num-1]:5+cumsum[assign_num]]
+scores = list(map(list,zip(*scores)))
+totals = [sumvalid(stud) for stud in scores]
+out_lines = ["{}\t{}".format(names[i], totals[i]) for i in range(len(names))]
+with open('online_scores.txt','w') as f:
+    f.write('\n'.join(out_lines))
+
+
+mport numpy as np
 
 def get_credentials():
     with open('wa_credentials.txt','r') as f:
@@ -74,36 +106,5 @@ def sumvalid(list):
     for n in list:
         sum += try_parse_float(n)
     return sum
-
-# Main script
-# the number of columns (sections) for each assignment
-# Note: this is likely to change from term to term
-hw_cols = [0,4,3,3,3,4,3,4,4] # 0th element is a dummy value
-
-try:
-    assign_num = int(sys.argv[1])
-except IndexError:
-    print("Please specify the assignment number")
-    sys.exit(0)
-
-results = get_scores()
-with open('raw_scores.txt','w') as f:
-    f.write(results)
-
-cumsum = np.cumsum(hw_cols)
-lines = results.strip().split('\n')
-# discard 9 header rows and last row (teacher scores)
-lines = lines[9:-1] 
-rows = [l.split('\t') for l in lines]
-cols = list(map(list,zip(*rows)))
-names = cols[0]
-
-scores = cols[5+cumsum[assign_num-1]:5+cumsum[assign_num]]
-scores = list(map(list,zip(*scores)))
-totals = [sumvalid(stud) for stud in scores]
-out_lines = ["{}\t{}".format(names[i], totals[i]) for i in range(len(names))]
-with open('online_scores.txt','w') as f:
-    f.write('\n'.join(out_lines))
-
 
 

@@ -105,5 +105,4 @@ ENV/
 *.html
 *.txt
 *.swp
-parser.py
 *.ods

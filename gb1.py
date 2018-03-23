@@ -251,6 +251,7 @@ def input_scores(gb, cg):
         score = gb.get_score(s, cg, q)
         done, s_idx, q_idx = get_input(score, s, cg, q, s_idx, q_idx)
     menus.set_reports_gradeable_sel_options(gb)
+    menus.set_gradeable_options
 
 def input_student_scores(gb, s):
     cg = gb.cur_gradeable
@@ -264,6 +265,7 @@ def input_student_scores(gb, s):
         score = gb.get_score(s, cg, q)
         done, q_idx = get_student_input(score, s, cg, q, q_idx)
     menus.set_reports_gradeable_sel_options(gb)  
+    menus.set_gradeable_options
 
 def handle_limits(s_idx, q_idx, s_ct, q_ct):
     if s_idx <= 0 and q_idx < 0:

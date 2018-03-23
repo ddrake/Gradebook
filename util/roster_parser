@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 from html.parser import HTMLParser
 # instructions for use:
 # 1. Go to the Summary Faculty Class List in Banweb

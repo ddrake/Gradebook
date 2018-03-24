@@ -405,7 +405,9 @@ def rpt_class_summary(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in gb.get_actives()])
-    aves = pcts.mean(1)
+    weights = np.array([cat.pct_of_grade for cat in cats])
+    adj_weights = weights/sum(weights)
+    aves = (pcts*adj_weights).sum(1)
     title="Class Summary Report"
     plot_hist(aves,title)
     aveinds = aves.argsort()

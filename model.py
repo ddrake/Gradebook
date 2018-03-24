@@ -192,8 +192,8 @@ class Gradeable:
         return None
 
     def adjusted_score(self, student):
-        return (sum([self.course.get_score(student, self, q).value for q in self.questions]) \
-                + self.added_pts)*(100.0+self.added_pct)/100.0
+        return sum([self.course.get_score(student, self, q).value for q in self.questions]) \
+                + self.added_pts + self.added_pct*self.total_pts/100.0
         
     def has_scores(self):
         return self in self.course.gradeables_with_scores()

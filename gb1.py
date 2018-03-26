@@ -342,8 +342,8 @@ def rpt_graded_item_details_by_student(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
             for s in gb.get_actives()])
-    tots = ar.sum(1)+cg.added_pts
-    pcts = tots/cg.total_pts*100.0 + cg.added_pct
+    tots = np.array([cg.adjusted_score(s) for s in gb.get_actives()])
+    pcts = np.array([cg.adjusted_pct(s) for s in gb.get_actives()])
     title="{} Details by Student".format(cg.name)
     m,n = ar.shape
     col_headings = ["#{0:d}".format(j+1) for j in range(n)]
@@ -359,9 +359,8 @@ def rpt_graded_item_details(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     ar = np.array([[gb.get_score(s,cg,q).value for q in cg.questions] \
             for s in gb.get_actives()])
-    tots = ar.sum(1)+cg.added_pts
-    print(cg.added_pts)
-    pcts = tots/cg.total_pts*100.0 + cg.added_pct
+    tots = np.array([cg.adjusted_score(s) for s in gb.get_actives()])
+    pcts = np.array([cg.adjusted_pct(s) for s in gb.get_actives()])
     title="{} Details".format(cg.name)
     plot_hist(pcts,title)
     totinds = tots.argsort()
@@ -383,10 +382,8 @@ def rpt_class_detail(gb):
         return
     names = np.array([s.name() for s in gb.get_actives()])
     col_headings = [g.name for g in gradeables]
-    ar = np.array([[g.adjusted_score(s) for g in gradeables] for s in gb.get_actives()])
-    possibles = np.array([g.total_pts for g in gradeables])
-    pcts = ar/possibles*100.0
-    aves = pcts.mean(1)
+    pcts = np.array([[g.adjusted_pct(s) for g in gradeables] for s in gb.get_actives()])
+    aves = np.array([s.estimated_grade() for s in gb.get_actives()])
     title="Class Details Report"
     plot_hist(aves,title)
     aveinds = aves.argsort()
@@ -405,9 +402,7 @@ def rpt_class_summary(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in gb.get_actives()])
-    weights = np.array([cat.pct_of_grade for cat in cats])
-    adj_weights = weights/sum(weights)
-    aves = (pcts*adj_weights).sum(1)
+    aves = np.array([s.estimated_grade() for s in gb.get_actives()])
     title="Class Summary Report"
     plot_hist(aves,title)
     aveinds = aves.argsort()
@@ -457,9 +452,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
         return
     student = stud or gb.cur_student
     pcts = np.array([c.combined_pct(student) for c in cats])
-    weights = np.array([cat.pct_of_grade for cat in cats])
-    adj_weights = weights/sum(weights)
-    grade = (pcts*adj_weights).sum()
+    grade = student.estimated_grade()
     student_summary_line_body(student, grade, cats, pcts, send_email) 
     ui.pause()
 
@@ -492,9 +485,7 @@ def rpt_class_summary_line(gb, send_email=False):
     students = gb.get_actives()
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
     m,n = pcts.shape
-    weights = np.array([cat.pct_of_grade for cat in cats])
-    adj_weights = weights/sum(weights)
-    grades = (pcts*adj_weights).sum(1)
+    grades = np.array([s.estimated_grade() for s in gb.get_actives()])
     for i in range(m):
         student = students[i]
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)
@@ -533,7 +524,7 @@ def student_score_text(gb, student):
         out += "  {}\n".format(cat.name)
         gs = sorted((g for g in gb.gradeables if g.category is cat), key=lambda g: g.name)
         for g in gs:
-            out += "    {0} {1:.1f}\n".format(g.name,g.adjusted_score(student)/g.total_pts*100)
+            out += "    {0} {1:.1f}\n".format(g.name, g.adjusted_pct(student))
     return out
 
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)

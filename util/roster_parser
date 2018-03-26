@@ -3,8 +3,11 @@ from html.parser import HTMLParser
 # instructions for use:
 # 1. Go to the Summary Faculty Class List in Banweb
 # 2. View Source
-# 3. Copy the part with names and emails into classlist.html
-# 4. Load this script into ipython3
+# 3. Copy the table element below into a textfile classlist.html
+#     <table  CLASS="datadisplaytable" 
+# 4. Try running this script from the command line and importing students.txt
+#       into Gradebook.
+# 4. If you run into issues, load this script into ipython3
 # 5. Check the students list, compare to the studs list
 # 6. Tab separated file was exported as students.txt
 class MyHTMLParser(HTMLParser):

@@ -34,11 +34,11 @@ Gradebook
 
 #### Course
 
-To set up your new course, first select 'Edit Course' to change the Course name and term from their default values.  
+To set up your new course, first select 'Edit Course' to change the Course name and term from their default values.  You may also want to change the 'Letter +/- Pct.', which is used to determine letter grades.  For example if this is set to1.0, the default, a grade percent p such that 90.0 <= p < 91.0 will be assigned an A-, and 89.0 <= p < 90.0 will be assigned a B+.  The last option, 'Global Added Pct.', may be used near the end of the term to bump everyone's grades uniformly by some percent.  
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted, whether or not they have scores.  Inactive students don't show up on reports or when entering new scores.  Later, as students add or drop the class, it's simple to export the list of students to a textfile for import into a spreadsheet.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Students are always 'active' when added, but can later be inactivated or deleted, whether or not they have scores.  Inactive students don't show up on reports or when entering new scores.  Later, as students add or drop the class, it's simple to export the list of students to a textfile for import into a spreadsheet.  The export process will automatically open the textfile in Libre Office, if it is installed.  It includes the current grade percent and letter grade for each student.
 
 #### Categories
 

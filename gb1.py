@@ -108,7 +108,7 @@ def export_students(gb):
         with open('students.txt','w') as f:
             f.write("First Name\tLast Name\tEmail\tGrade\tLetter\tNotes\tActive?\tHas Scores\n")
             f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}\t{}".format( \
-                s.first, s.last, s.email, ui.num_na_str(s.estimated_grade()), ui.na_str(s.letter_grade()), s.notes, \
+                s.first, s.last, s.email, ui.num_na_str(s.grade()), ui.na_str(s.letter_grade()), s.notes, \
                 "Y" if s.is_active else "N", \
                 "Y" if s.has_scores() else "N") for s in gb.students]))
     except Exception as ex:
@@ -383,7 +383,7 @@ def rpt_class_detail(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     col_headings = [g.name for g in gradeables]
     pcts = np.array([[g.adjusted_pct(s) for g in gradeables] for s in gb.get_actives()])
-    aves = np.array([s.estimated_grade() for s in gb.get_actives()])
+    aves = np.array([s.grade() for s in gb.get_actives()])
     title="Class Details Report"
     plot_hist(aves,title)
     aveinds = aves.argsort()
@@ -402,7 +402,7 @@ def rpt_class_summary(gb):
     names = np.array([s.name() for s in gb.get_actives()])
     cnames = [c.name for c in cats]
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in gb.get_actives()])
-    aves = np.array([s.estimated_grade() for s in gb.get_actives()])
+    aves = np.array([s.grade() for s in gb.get_actives()])
     title="Class Summary Report"
     plot_hist(aves,title)
     aveinds = aves.argsort()
@@ -452,7 +452,7 @@ def rpt_student_summary_line(gb, send_email=False, stud=None):
         return
     student = stud or gb.cur_student
     pcts = np.array([c.combined_pct(student) for c in cats])
-    grade = student.estimated_grade()
+    grade = student.grade()
     student_summary_line_body(student, grade, cats, pcts, send_email) 
     ui.pause()
 
@@ -485,7 +485,7 @@ def rpt_class_summary_line(gb, send_email=False):
     students = gb.get_actives()
     pcts = np.array([[c.combined_pct(s) for c in cats] for s in students])
     m,n = pcts.shape
-    grades = np.array([s.estimated_grade() for s in gb.get_actives()])
+    grades = np.array([s.grade() for s in gb.get_actives()])
     for i in range(m):
         student = students[i]
         student_summary_line_body(student, grades[i], cats, pcts[i,:], send_email)

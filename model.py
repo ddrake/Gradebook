@@ -122,7 +122,7 @@ class Student:
     def has_scores(self):
         return self in self.course.students_with_scores()
 
-    def estimated_grade(self):
+    def grade(self):
         cats = self.course.categories_with_scores()
         if not cats: return None
         pcts = np.array([c.combined_pct(self) for c in cats])
@@ -131,7 +131,7 @@ class Student:
         return (pcts*adj_weights).sum() + self.course.global_added_pct
  
     def letter_grade(self):
-        grade = self.estimated_grade()
+        grade = self.grade()
         return None if grade == None else self.course.letter_grade_for_pct(grade)
 
     def partial_est_grade(self):

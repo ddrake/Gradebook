@@ -90,11 +90,14 @@ class Course:
         s = sum([(c.est_ct - c.actual_ct())/c.est_ct * c.pct_of_grade/100.0 \
                     for c in self.categories if c.est_ct - c.actual_ct() > 0])
         return 1/s if s > 0 else None
-    
-    def letter_grade_for_pct(self, pct):
+
+    def grade_mins(self):
         pm = self.letter_plus_minus_pct
-        letters = ['D-', 'D',    'D+',     'C-', 'C',     'C+',    'B-', 'B',     'B+',    'A-', 'A'    ]
-        mins =    [60.0, 60.0+pm, 70.0-pm, 70.0, 70.0+pm, 80.0-pm, 80.0, 80.0+pm, 90.0-pm, 90,   90.0+pm]
+        return [60.0, 60.0+pm, 70.0-pm, 70.0, 70.0+pm, 80.0-pm, 80.0, 80.0+pm, 90.0-pm, 90,   90.0+pm], \
+               ['D-', 'D',    'D+',     'C-', 'C',     'C+',    'B-', 'B',     'B+',    'A-', 'A'    ]
+
+    def letter_grade_for_pct(self, pct):
+        mins, letters = self.grade_mins()
         for i in range(len(mins)-1,-1,-1):
             if pct >= mins[i]: 
                 return letters[i]

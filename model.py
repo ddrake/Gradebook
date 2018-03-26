@@ -1,9 +1,9 @@
 import numpy as np
 
-schema_version = 3
+schema_version = 4
 
 class Course:
-    def __init__(self, name = '', term = ''):
+    def __init__(self, name = '', term = '', global_added_pct=0.0, letter_plus_minus_pct=1.0):
         global schema_version
         self.name = name
         self.term = term
@@ -16,7 +16,9 @@ class Course:
         self.cur_student = None
         self.cur_gradeable = None
         self.cur_category = None
-    
+        self.global_added_pct = global_added_pct
+        self.letter_plus_minus_pct = letter_plus_minus_pct
+ 
     def get_score(self, student, gradeable, question):
         key = (student, gradeable, question)
         if key in self.scores.keys():
@@ -88,6 +90,15 @@ class Course:
         s = sum([(c.est_ct - c.actual_ct())/c.est_ct * c.pct_of_grade/100.0 \
                     for c in self.categories if c.est_ct - c.actual_ct() > 0])
         return 1/s if s > 0 else None
+    
+    def letter_grade_for_pct(self, pct):
+        pm = self.letter_plus_minus_pct
+        letters = ['D-', 'D',    'D+',     'C-', 'C',     'C+',    'B-', 'B',     'B+',    'A-', 'A'    ]
+        mins =    [60.0, 60.0+pm, 70.0-pm, 70.0, 70.0+pm, 80.0-pm, 80.0, 80.0+pm, 90.0-pm, 90,   90.0+pm]
+        for i in range(len(mins)-1,-1,-1):
+            if pct >= mins[i]: 
+                return letters[i]
+        return 'F'
 
 class Student:
     def __init__(self, course, first = '', last = '', email = '', \
@@ -117,8 +128,12 @@ class Student:
         pcts = np.array([c.combined_pct(self) for c in cats])
         weights = np.array([cat.pct_of_grade for cat in cats])
         adj_weights = weights/sum(weights)
-        return (pcts*adj_weights).sum()
+        return (pcts*adj_weights).sum() + self.course.global_added_pct
  
+    def letter_grade(self):
+        grade = self.estimated_grade()
+        return None if grade == None else self.course.letter_grade_for_pct(grade)
+
     def partial_est_grade(self):
         cats = self.course.categories_with_scores()
         if not cats: return None

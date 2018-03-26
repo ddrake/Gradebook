@@ -14,10 +14,10 @@ from report import SimpleReport, plot_hist
 # Course Management
 #--------------------
 def edit_course(gb):
-    name = ui.get_string("Enter Course Name", gb.name)
-    term = ui.get_string("Enter Quarter", gb.term)
-    gb.name = name
-    gb.term = term
+    gb.name = ui.get_string("Enter Course Name", gb.name)
+    gb.term = ui.get_string("Enter Quarter", gb.term)
+    gb.global_added_pct = ui.get_valid_float("Global Added Pct.", 0, 100, gb.global_added_pct)
+    gb.letter_plus_minus_pct = ui.get_valid_float("Letter +/- Pct.", 0, 9, gb.letter_plus_minus_pct)
     menus.set_main_options(gb)
 
 #--------------------
@@ -106,9 +106,9 @@ def import_students(gb):
 def export_students(gb):
     try:
         with open('students.txt','w') as f:
-            f.write("First Name\tLast Name\tEmail\tEst. Grade\tNotes\tActive?\tHas Scores\n")
+            f.write("First Name\tLast Name\tEmail\tGrade\tLetter\tNotes\tActive?\tHas Scores\n")
             f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}\t{}".format( \
-                s.first, s.last, s.email, ui.num_na_str(s.estimated_grade()), s.notes, \
+                s.first, s.last, s.email, ui.num_na_str(s.estimated_grade()), ui.na_str(s.letter_grade()), s.notes, \
                 "Y" if s.is_active else "N", \
                 "Y" if s.has_scores() else "N") for s in gb.students]))
     except Exception as ex:

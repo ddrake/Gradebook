@@ -13,7 +13,9 @@ def save(gb, file_name):
 
 # transfer all data in the course object hierarchy to a dictionary
 def course_to_dict(gb):
-    course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, 'gradeables':[], 'scores':[]}
+    course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, \
+            'global_added_pct': gb.global_added_pct, 'letter_plus_minus_pct': gb.letter_plus_minus_pct, \
+            'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
             'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'obj': c} for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
@@ -46,7 +48,8 @@ def course_from_dict(course_dict):
     question_dict = {(q['gid'],q['id']) : q for g in course_dict['gradeables'] \
             for q in g['questions'] }
 
-    course_obj = Course(course_dict['name'], course_dict['term'])
+    course_obj = Course(course_dict['name'], course_dict['term'], \
+                        course_dict['global_added_pct'], course_dict['letter_plus_minus_pct'])
     for cd in course_dict['categories']:
         category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], cd['est_ct'])
         category_dict[cd['id']]['obj'] = category
@@ -88,4 +91,8 @@ def upgrade(course_dict):
             c['est_ct']=0
         course_dict['schema_version'] = 3
         print("upgraded schema to version 3")
+    elif course_dict['schema_version'] == 3:
+        course_dict['global_added_pct'] = 0.0
+        course_dict['letter_plus_minus_pct'] = 1.0
+        course_dict['schema_version'] = 4
 

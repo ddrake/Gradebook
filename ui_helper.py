@@ -124,3 +124,5 @@ def open_in_calc(filename):
 def num_na_str(number):
     return "{0:.1f}".format(number) if number != None else 'N/A'
 
+def na_str(string):
+    return string if string != None else 'N/A'

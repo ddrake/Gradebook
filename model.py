@@ -183,8 +183,8 @@ class Category:
                 gtots = [g.total_pts for g in gs]
                 return sum(gpts)/sum(gtots)*100
             else:
+                gpcts = [g.adjusted_score(student) * 100 / g.total_pts for g in gs]
                 if self.drop_low_n > 0:
-                    gpcts = [g.adjusted_score(student) * 100 / g.total_pts for g in gs]
                     st_idx = self.drop_low_n if len(gs) > self.drop_low_n  else 0
                     return sum(sorted(gpcts)[st_idx:]) / (len(gpcts)-st_idx)
                 else:

@@ -98,7 +98,9 @@ def upgrade(course_dict):
         course_dict['schema_version'] = 4
         print("upgraded schema to version 4")
     elif course_dict['schema_version'] == 4:
-        course_dict['combine_pts'] = False
+        print("upgrading to version 5")
+        for c in course_dict['categories']:
+            c['combine_pts'] = 0
         course_dict['schema_version'] = 5
         print("upgraded schema to version 5")
 

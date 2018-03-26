@@ -28,18 +28,18 @@ def add_category(gb):
     pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100)
     drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, 0)
     est_ct = ui.get_valid_int("Estimated Items", 0, 100, 0)
-    cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct)
+    combine_pts = ui.get_bool("Combine Points instead of Percents?", 0)
+    cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct, combine_pts)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
 def edit_category(gb):
     name = ui.get_string("Enter Category Name", gb.cur_category.name)
-    pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
-    gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
-    est_ct = ui.get_valid_int("Estimated Items", 0, 100, gb.cur_category.est_ct)
     gb.cur_category.name = name or gb.cur_category.name
-    gb.cur_category.pct_of_grade = pct_of_grade
-    gb.cur_category.est_ct = est_ct
+    gb.cur_category.pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
+    gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
+    gb.cur_category.est_ct = ui.get_valid_int("Estimated Items", 0, 100, gb.cur_category.est_ct)
+    gb.cur_category.combine_pts = ui.get_bool("Combine Points instead of Percents?", gb.cur_category.combine_pts)
     menus.set_category_options(gb)
 
 def delete_category(gb):
@@ -233,8 +233,6 @@ def update_scores(gb, scores, xref):
         student = matches[0]
         score = gb.get_score(student, gb.cur_gradeable, gb.cur_gradeable.questions[0])
         score.value = float(q1_score)
-
-
 
 #------------
 # Score Entry

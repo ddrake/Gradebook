@@ -17,7 +17,8 @@ def course_to_dict(gb):
             'global_added_pct': gb.global_added_pct, 'letter_plus_minus_pct': gb.letter_plus_minus_pct, \
             'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
-            'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'obj': c} for i, c in enumerate(gb.categories)]
+            'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'combine_pts':c.combine_pts, 'obj': c} \
+                for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
             'email': s.email, 'is_active': s.is_active,'notes': s.notes, 'obj': s} \
             for i, s in enumerate(gb.students)]
@@ -51,7 +52,7 @@ def course_from_dict(course_dict):
     course_obj = Course(course_dict['name'], course_dict['term'], \
                         course_dict['global_added_pct'], course_dict['letter_plus_minus_pct'])
     for cd in course_dict['categories']:
-        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], cd['est_ct'])
+        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], cd['est_ct'], cd['combine_pts'])
         category_dict[cd['id']]['obj'] = category
         course_obj.categories.append(category)
     for sd in course_dict['students']:
@@ -95,4 +96,10 @@ def upgrade(course_dict):
         course_dict['global_added_pct'] = 0.0
         course_dict['letter_plus_minus_pct'] = 1.0
         course_dict['schema_version'] = 4
+        print("upgraded schema to version 4")
+    elif course_dict['schema_version'] == 4:
+        course_dict['combine_pts'] = False
+        course_dict['schema_version'] = 5
+        print("upgraded schema to version 5")
+
 

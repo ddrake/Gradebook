@@ -1,6 +1,6 @@
 import numpy as np
 
-schema_version = 4
+schema_version = 5
 
 class Course:
     def __init__(self, name = '', term = '', global_added_pct=0.0, letter_plus_minus_pct=1.0):
@@ -157,12 +157,15 @@ class Question:
         self.points = points
 
 class Category:
-    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0, est_ct=0):
+    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0, est_ct=0, combine_pts=0):
         self.course = course
         self.name = name
         self.pct_of_grade = pct_of_grade
-        self.drop_low_n = drop_low_n
-        self.est_ct = est_ct  # the estimate number of gradeables in the category
+        self.drop_low_n = drop_low_n 
+        # the estimated number of gradeables in the category (used to get avg score needed for grade)
+        self.est_ct = est_ct 
+        # combine gradeables by adding points instead of percents
+        self.combine_pts = combine_pts 
 
     def actual_ct(self):
         gs = self.gradeables_with_scores()
@@ -174,12 +177,18 @@ class Category:
             return sum(g.adjusted_score(student) * 100 / g.total_pts * \
                     (g.sub_pct/100.0 if g.sub_pct != 0.0 else 1.0) for g in gs)
         else:
-            gpcts = [g.adjusted_score(student) * 100 / g.total_pts for g in gs]
-            if self.drop_low_n > 0:
-                st_idx = self.drop_low_n if len(gs) > self.drop_low_n  else 0
-                return sum(sorted(gpcts)[st_idx:]) / (len(gpcts)-st_idx)
+            if self.combine_pts:
+                # todo: figure out how to drop lowest in this case (maybe unnecessary)
+                gpts = [g.adjusted_score(student) for g in gs]
+                gtots = [g.total_pts for g in gs]
+                return sum(gpts)/sum(gtots)*100
             else:
-                return sum(gpcts) / len(gpcts)
+                if self.drop_low_n > 0:
+                    gpcts = [g.adjusted_score(student) * 100 / g.total_pts for g in gs]
+                    st_idx = self.drop_low_n if len(gs) > self.drop_low_n  else 0
+                    return sum(sorted(gpcts)[st_idx:]) / (len(gpcts)-st_idx)
+                else:
+                    return sum(gpcts) / len(gpcts)
 
     def gradeables_with_scores(self):
         return [g for g in self.course.gradeables_with_scores() if g.category is self]

@@ -80,7 +80,6 @@ class Course:
         self.cur_gradeable = None
 
     def remove_category(self, category):
-        # orphaned scores won't persist and shouldn't cause any trouble.
         self.gradeables = [g for g in self.gradeables if not g.category is category]
         self.categories.remove(category)
         self.cur_category = None

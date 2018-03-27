@@ -43,8 +43,12 @@ class Course:
                 if (s.first == first and s.last == last) or s.email == email):
             self.students.append(Student(self, first, last, email))
 
+    def remove_student_scores(self, student):
+        for k in [k for k in self.scores.keys()]: 
+            if student is k[0]: self.scores.pop(k,None)
+
     def remove_student(self, student):
-        # orphaned scores won't persist and shouldn't cause any trouble.
+        self.remove_student_scores(student)
         self.students.remove(student)
         self.cur_student = None
         self.actives = None
@@ -52,8 +56,12 @@ class Course:
     def any_students_with_scores(self):
         return any(s for s in self.scores.values() if s.value != 0) 
 
+    def remove_all_scores(self):
+        self.scores = {}
+
     def delete_all_students(self):
         if self.any_students_with_scores(): return
+        self.remove_all_scores()
         self.students = []
         self.actives = None
 
@@ -62,8 +70,12 @@ class Course:
             self.actives = [s for s in self.students if s.is_active]
         return self.actives
 
+    def remove_gradeable_scores(self, gradeable):
+        for k in [k for k in self.scores.keys()]:
+            if gradeable is k[1]: self.scores.pop(k,None)
+
     def remove_gradeable(self, gradeable):
-        # orphaned scores won't persist and shouldn't cause any trouble.
+        self.remove_gradeable_scores(gradeable)
         self.gradeables.remove(gradeable);
         self.cur_gradeable = None
 

@@ -44,10 +44,20 @@ class Course:
             self.students.append(Student(self, first, last, email))
 
     def remove_student(self, student):
+        # I think this is unnecessary - orphaned scores won't persist
+        # and shouldn't cause any trouble.
         for k in [k for k in self.scores.keys()]: 
             if student is k[0]: self.scores.pop(k,None)
         self.students.remove(student)
         self.cur_student = None
+        self.actives = None
+
+    def any_students_with_scores(self):
+        return any(s for s in self.scores.values() if s.value != 0) 
+
+    def delete_all_students(self):
+        if self.any_students_with_scores(): return
+        self.students = []
         self.actives = None
 
     def get_actives(self):

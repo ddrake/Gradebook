@@ -88,6 +88,13 @@ def delete_student(gb):
     menus.m_student_edit_del.close()
 
 def import_students(gb):
+    if gb.any_students_with_scores():
+        print("Some students have scores.  These students must be manually deleted importing can proceed.")
+        ui.pause()
+        return
+    if gb.students:
+        if not ui.confirm("OK to delete existing students?"): return
+        gb.delete_all_students()
     try:
         with open('students.txt','r') as f:
             text = f.read()

@@ -1,22 +1,12 @@
 #!/usr/bin/env python3
 from html.parser import HTMLParser
-# instructions for use:
-# 1. Go to the Summary Faculty Class List in Banweb
-# 2. View Source
-# 3. Copy the table element below into a textfile classlist.html
-#     <table  CLASS="datadisplaytable" 
-# 4. Try running this script from the command line and importing students.txt
-#       into Gradebook.
-# 4. If you run into issues, load this script into ipython3
-# 5. Check the students list, compare to the studs list
-# 6. Tab separated file was exported as students.txt
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             for attr in attrs:
                 if attr[0] == 'href':
                     if attr[1][:7] == 'mailto:':
-                        print(attr[1][7:])
+                        #print(attr[1][7:])
                         self.student.append(attr[1][7:])
                         self.students.append(self.student)
                         self.student = []
@@ -25,11 +15,12 @@ class MyHTMLParser(HTMLParser):
 
     def handle_data(self, data):
         if self.founda:
-            print(data)
+            #print(data)
             self.student.append(data)
             self.founda = False
 
-
+# This script assumes that the file 'classlist.html' exists in its directory.
+# It parses that file (a table element from Banweb) and saves the results in students.txt
 parser = MyHTMLParser()
 parser.founda = False
 parser.students = []

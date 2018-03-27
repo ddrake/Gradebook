@@ -6,9 +6,9 @@ The user interface is based on [Python Menu-3.1.0](https://pypi.python.org/pypi/
 
 All data for a course is stored in a single JSON file, which is written when you 'Save' or 'Quit'.  The top level 'Course' object has properties for the course name and the term.  The JSON file is named by a concatenation of these. A Course contains lists of Categories, Graded Items and Students and a dictionary of Scores.  
 
-To open Gradebook for a specific saved course named "Math 251" in the term "Fall 2018" we execute it like this:
+To open Gradebook for a specific saved course named "Math 251" in the term "Winter 2018" we execute it like this:
 
-```$ ./gb1 Math_251_Fall_2018.json```  
+```$ ./gb1 Math_251_Winter_2018.json```  
 
 Note: See the 'gb' script in the utils folder for an example of how to save keystrokes by starting the application with a specific course and automatically back up the data file to cloud storage using rclone.
 
@@ -67,6 +67,8 @@ It's also possible to select single student for score entry, which is handy if s
 
 If you make an invalid entry, such as a typo, or entering a score for a question that is greater than the points for the question, an audible and visible warning will be given.  You will also receive an audible and printed warning when you reach the end of the list, or try to go back before the beginning.
 
+Once you've finished entering scores, you can go to Reports > Graded Item Reports, select the graded item, then select 'Details by Student'.  This will display a percent score for each student.  Then you can just flip back through the stack of items and mark each one with the percent.
+
 #### Importing Scores
 
 If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall Webassign total can be imported into an existing graded item with a single question representing the total possible points.
@@ -83,14 +85,14 @@ The reporting capabilities include the following:
 * Class Details: This has a similar format to the graded items report, but instead of showing columns for individual questions, shows the total score as a column for each graded item.
 * Class Summary: This groups the graded items into categories and displays the weight for each category.  Unlike the Graded Item Details and Class Details reports, this report is able to apply the special summarization features, such as dropping the lowest quiz or combining the midterm scores with the retake scores.
 * Student Summary: This combines all scores for each student into a single text string like "Homework (10% of grade): 94%, Quizzes (25% of grade) 87%, Midterm 1 (20% of grade) 78%".  There is an option to email (via gmail) this grade summary to one or all students in the class.  All you need to do to make this work is rename the file 'gmail_credentials.txt.sample' to 'gmail_credentials.txt', edit it to include your personal gmail account information and signature, and move it to the application directory.
-* Average score needed for grade:  This helps to answer the common, but elusive question asked by students: What do I need to score on future assignments to get my desired grade in the class?  The current logic needs some improvements, but gives a pretty good estimate.  For this to work correctly, you need to set the "Estimated Items" for each category.
+* Average score needed for grade:  This helps to answer the question sometimes asked by students: What do I need to score on future assignments to get my desired grade in the class?  The current logic needs some improvements, but gives a pretty good estimate.  For best accuracy, you need to set the "Estimated Items" correctly for each category.
 * Student scores:  This report simply lists the scores for a student for each graded item.  It groups by category and sorts by the graded item name.  This report can be emailed to each student to let them know what grades you have recorded for them so that any errors can be corrected before the final grade is posted.
 
 A histogram with letter grade bins pops up for each of the first three reports.
 
 ### Course Data Schema
 
-A schema version number is now stored in the JSON course file.  If the gradebook application schema number is greater than that of the data file being loaded, a sequence of schema migrations will be automatically performed to bring the data file up to the current schema.  The file saved on exit will have the same schema number as that of the application being run.
+A schema version number is stored in the JSON course file.  If the schema number of the Gradebook application being used is greater than that of the data file being loaded, a sequence of schema migrations will be automatically performed to bring the data file up to the current schema.  The application will notify you of each update. The file saved on exit will have the same schema number as that of the application just run.
 
 ### Contributing
 

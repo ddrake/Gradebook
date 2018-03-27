@@ -38,7 +38,7 @@ To set up your new course, first select 'Edit Course' to change the Course name 
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  The application will not allow you to import if there are any existing students with scores.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Any existing students are deleted first, but the application will not allow you to import if there are any existing students with scores.
 
 In case your school is using the Banner system, there are Python scripts in the utils folder that will fetch your current roster from Banweb and create 'students.txt' automatically for you.
 

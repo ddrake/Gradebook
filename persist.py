@@ -1,5 +1,6 @@
 from model import *
 import json
+import ui_helper as ui
 
 def read(file_name):
     with open(file_name,'r') as f:
@@ -38,9 +39,7 @@ def course_to_dict(gb):
 
 # construct the course object hierarchy from a dictionary
 def course_from_dict(course_dict):
-    global schema_version
-    while not 'schema_version' in course_dict or course_dict['schema_version'] < schema_version:
-        upgrade(course_dict)
+    upgrade(course_dict)
 
     # id-keyed dicts for reconstructing scores
     category_dict = {item['id'] : item for item in course_dict['categories']}
@@ -79,29 +78,30 @@ def course_from_dict(course_dict):
     return course_obj
 
 def upgrade(course_dict):
-    if not 'schema_version' in course_dict:
-        course_dict['schema_version'] = 1
-        print("upgraded schema to version 1")
-    elif course_dict['schema_version'] == 1:
-        for s in course_dict['students']:
-            s['notes']=''
-        course_dict['schema_version'] = 2
-        print("upgraded schema to version 2")
-    elif course_dict['schema_version'] == 2:
-        for c in course_dict['categories']:
-            c['est_ct']=0
-        course_dict['schema_version'] = 3
-        print("upgraded schema to version 3")
-    elif course_dict['schema_version'] == 3:
-        course_dict['global_added_pct'] = 0.0
-        course_dict['letter_plus_minus_pct'] = 1.0
-        course_dict['schema_version'] = 4
-        print("upgraded schema to version 4")
-    elif course_dict['schema_version'] == 4:
-        print("upgrading to version 5")
-        for c in course_dict['categories']:
-            c['combine_pts'] = 0
-        course_dict['schema_version'] = 5
-        print("upgraded schema to version 5")
+    global schema_version
+    cv = course_dict['schema_version'] if 'schema_version' in course_dict else 0
+    while cv < schema_version:
+        cv += 1
+        globals()["migration"+str(cv)](course_dict)
+        course_dict['schema_version'] = cv
+        print("upgraded schema to version ", cv)
+        ui.pause()
+
+def migration1(course_dict):
+    course_dict['schema_version'] = 1
+
+def migration2(course_dict):
+    for s in course_dict['students']: s['notes']=''
+
+def migration3(course_dict):
+    for c in course_dict['categories']: c['est_ct']=0
+
+def migration4(course_dict):
+    course_dict['global_added_pct'] = 0.0
+    course_dict['letter_plus_minus_pct'] = 1.0
+    course_dict['schema_version'] = 4
+
+def migration5(course_dict):
+    for c in course_dict['categories']: c['combine_pts'] = 0
 
 

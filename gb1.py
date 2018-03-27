@@ -89,7 +89,7 @@ def delete_student(gb):
 
 def import_students(gb):
     if gb.any_students_with_scores():
-        print("Some students have scores.  These students must be manually deleted importing can proceed.")
+        print("Some students have scores.\nThese students must be manually deleted before importing can proceed.")
         ui.pause()
         return
     if gb.students:

@@ -38,13 +38,13 @@ To set up your new course, first select 'Edit Course' to change the Course name 
 
 #### Students
 
-Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'students.txt'.  A sample file, 'students.txt.sample', is provided in this repository.  Any existing students are deleted first, but the application will not allow you to import if there are any existing students with scores.
+Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'roster.txt'.  A sample file, 'roster.txt.sample', is provided in this repository.  Any existing students are deleted first, but the application will not allow you to import if there are any existing students with scores.
 
-In case your school is using the Banner system, there are Python scripts in the utils folder that will fetch your current roster from Banweb and create 'students.txt' automatically for you.
+In case your school is using the Banner system, there are Python scripts in the utils folder that will fetch your current roster from Banweb and create 'roster.txt' automatically for you.
 
 Students are always 'active' when added, but can be later inactivated or deleted, whether or not they have scores.  Inactive students don't show up on reports or when entering new scores.  You can associate notes with students.  If you want to retain the notes for a student who dropped the class, it makes sense to inactivate them.
 
-Later, as students add or drop the class, it's simple to export the list of students.  The export process will automatically open the text file in Libre Office, if installed.  It includes notes, active status, the current grade percent and letter grade for each student.
+Later, as students add or drop the class, it's simple to export the list of students to a tab-separated text file 'students.txt' for import into a spreadsheet.  It includes notes, active status, the current grade percent and letter grade for each student.
 
 #### Categories
 

@@ -96,7 +96,7 @@ def import_students(gb):
         if not ui.confirm("OK to delete existing students?"): return
         gb.delete_all_students()
     try:
-        with open('students.txt','r') as f:
+        with open('roster.txt','r') as f:
             text = f.read()
         lines = text.rstrip().split('\n')
         for line in lines:
@@ -107,7 +107,7 @@ def import_students(gb):
         menus.set_student_options(gb)
         menus.set_student_last_first_options(gb)
     except:
-        print("The file 'students.txt' could not be found or was incorrectly formatted")
+        print("The file 'roster.txt' could not be found or was incorrectly formatted")
     ui.pause()
 
 def export_students(gb):
@@ -120,8 +120,6 @@ def export_students(gb):
                 "Y" if s.has_scores() else "N") for s in gb.students]))
     except Exception as ex:
         print(ex)
-    else:
-        ui.open_in_calc('students.txt')
     ui.pause()
 
 #---------------------

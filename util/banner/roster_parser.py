@@ -20,7 +20,7 @@ class MyHTMLParser(HTMLParser):
             self.founda = False
 
 # This script assumes that the file 'classlist.html' exists in its directory.
-# It parses that file (a table element from Banweb) and saves the results in students.txt
+# It parses that file (a table element from Banweb) and saves the results in roster.txt
 parser = MyHTMLParser()
 parser.founda = False
 parser.students = []
@@ -46,7 +46,7 @@ for name, email in students:
     stud = [first, last, email, fullfirst]
     studs.append(stud)
 
-with open('students.txt', 'w') as f:
+with open('roster.txt', 'w') as f:
     for s in studs:
         first, last, email = s[:3] 
         f.write("{}\t{}\t{}\n".format(first, last, email))

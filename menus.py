@@ -109,6 +109,7 @@ def set_student_edit_del_options(gb):
     m_student_edit_del.add_option("Return to Student List", \
             m_student_edit_del.close)
     m_student_edit_del.add_option("Edit", lambda : app.edit_student(gb))
+    m_student_edit_del.add_option("Append Notes", lambda : app.append_student_note(gb))
     m_student_edit_del.add_option("Delete", lambda : app.delete_student(gb))
 
 def set_student_import_options(gb):

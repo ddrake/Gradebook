@@ -204,8 +204,9 @@ def import_scores(gb):
     else:
         try:
             xref_list = [line.split('\t') for line in xref_text.strip().split('\n') ]
-            xref = {name: email for name, email in xref_list}
+            xref = {(last+", "+first).upper(): email for first, last, email in xref_list}
         except Exception as err:
+            xref = None
             print("The file 'online_xref.txt' was incorrectly formatted")
             print(err)
             ui.pause()
@@ -221,6 +222,7 @@ def update_scores(gb, scores, xref):
     for [name, q1_score] in scores:
         if name[0] == '"':
             name = name[1:-1] # remove quotes (if any)
+        name = name.upper()
         if xref:
             if name not in xref:
                 print(name, " is not in the xref dict")

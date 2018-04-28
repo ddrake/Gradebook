@@ -273,10 +273,10 @@ def input_student_scores(gb, s):
     menus.set_gradeable_options
 
 def handle_limits(s_idx, q_idx, s_ct, q_ct):
-    if s_idx <= 0 and q_idx < 0:
+    if (s_idx <= 0 and q_idx < 0) or s_idx < 0:
         ui.print_say("First One")
         return 0, 0
-    elif s_idx >= s_ct - 1 and q_idx >= q_ct:
+    elif (s_idx >= s_ct - 1 and q_idx >= q_ct) or s_idx >= s_ct:
         ui.print_say("Last One")
         return s_ct - 1, q_ct - 1
     elif q_idx >= q_ct:  

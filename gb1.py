@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, os
+import signal
 import datetime
 import numpy as np
 from model import *
@@ -9,6 +10,9 @@ import ui_helper as ui
 import menus
 import gmail
 from report import SimpleReport, plot_hist
+
+class CtrlCException(Exception):
+    pass
 
 #--------------------
 # Course Management
@@ -535,12 +539,20 @@ def student_score_text(gb, student):
     return out
 
     gradeables = sorted(gb.gradeables_with_scores(), key=lambda g: g.name)
+
 def save_and_exit(gb):
     persist.save(gb, gb.file_name())
     menus.m_main.close()
    
 def save_current(gb):
     persist.save(gb, gb.file_name())
+
+def quit(gb):
+    resp = ui.get_bool("Are you sure you want to Quit without saving?",0)    
+    if resp == 1: menus.m_main.close()
+
+def signal_handler(signal, frame):
+    raise CtrlCException("You pressed Ctrl+C")
 
 #-------------
 # Main Program
@@ -559,6 +571,13 @@ if __name__ == "__main__":
         gb = Course('New Course', term + " " + \
                 str(today.year + (1 if term == "Winter" and m >= 11 else 0)))
 
+    signal.signal(signal.SIGINT, signal_handler)
     menus.initialize_menus(gb)
-    menus.m_main.open()
-
+    while True:
+        try:
+            menus.m_main.open()
+            exit(0)
+        except CtrlCException as exp:
+            resp = ui.get_bool( \
+                    'You pressed Ctrl+C.  Do you want to forcibly Quit?',0)
+            if resp == 1: sys.exit(0)            

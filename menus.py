@@ -234,8 +234,9 @@ def set_reports_student_options(gb):
 def set_main_options(gb):
     m_main.title = "Gradebook for {} {}".format(gb.name, gb.term)
     m_main.options = []
-    m_main.add_option("Quit", lambda : app.save_and_exit(gb))
+    m_main.add_option("Save and Exit", lambda : app.save_and_exit(gb))
     m_main.add_option("Save", lambda : app.save_current(gb))
+    m_main.add_option("Quit", lambda : app.quit(gb))
     m_main.add_option("Enter Scores All Students", m_score_all.open)
     m_main.add_option("Enter Scores One Student", m_score_one.open)
     m_main.add_option("Reports", m_reports.open)

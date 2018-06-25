@@ -33,7 +33,7 @@ parser.feed(contents)
 
 students = parser.students
 studs = []
-for name, email in students:
+for name, _, email in students:
     namelst = name.split(', ')
     last, fullfirst = namelst
     start = fullfirst.find('(Pref:')

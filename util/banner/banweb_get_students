@@ -42,7 +42,10 @@ def get_students():
         EC.presence_of_element_located((By.LINK_TEXT, "Summary Class List")))
     time.sleep(2)
     elem.click()
-    # Select Term Form -- for now, assume that the correct term is selected by default.
+    elem = WebDriverWait(driver, 20).until( \
+        EC.presence_of_element_located((By.NAME,'term')))
+    select = Select(driver.find_element_by_name("term"))
+    select.select_by_value(str(term))
     elem = WebDriverWait(driver, 20).until( \
         EC.presence_of_element_located((By.CSS_SELECTOR,'input[type="submit"]')))
     time.sleep(2)
@@ -64,6 +67,13 @@ def get_students():
 
     driver.quit()
 
+# Specify the term
+# e.g. 201801 is Winter 2018
+#      201802 is Spring 2018
+#      201803 is Summer 2018
+#      201804 is Fall 2018
+
+term = 201803
 get_students()
 import roster_parser
 os.remove('classlist.html')

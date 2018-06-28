@@ -1,9 +1,10 @@
 import numpy as np
 
-schema_version = 6
+schema_version = 7
 
 class Course:
-    def __init__(self, name = '', term = '', global_added_pct=0.0, letter_plus_minus_pct=1.0):
+    def __init__(self, name = '', term = '', global_added_pct=0.0, \
+            letter_plus_minus_pct=1.0, audible_warnings=1):
         global schema_version
         self.name = name
         self.term = term
@@ -18,6 +19,8 @@ class Course:
         self.cur_category = None
         self.global_added_pct = global_added_pct
         self.letter_plus_minus_pct = letter_plus_minus_pct
+        self.audible_warnings = audible_warnings
+
  
     def get_score(self, student, gradeable, question):
         key = (student, gradeable, question)
@@ -203,6 +206,9 @@ class Category:
         gs = self.gradeables_with_scores()
         return 1 if any(g for g in gs if g.sub_pct !=0) else len(gs)
 
+    def set_gradeable_pcts(self, pcts):
+        self.gradeable_pcts = [] if pcts is None else sorted(pcts)
+
     def combined_pct(self, student):
         gs = self.gradeables_with_scores()
         if any(g for g in gs if g.sub_pct !=0):
@@ -245,24 +251,24 @@ class Category:
         msgs = []
         if any(g for g in self.course.gradeables if g.sub_pct !=0):
             if self.gradeable_pcts:
-                msgs.append( "Category {}: Graded items weighted by score is not supported " + \
-                        "when retake sub percent is set.".format(self.name))
+                msgs.append( ("Category '{}': Graded items weighted by score is not supported \n " + \
+                        "when retake sub percent is set.").format(self.name))
             if self.combine_pts:
-                msgs.append( "Category {}: Combine points instead of percents is not supported " + \
-                        "when retake sub percent is set.".format(self.name))
+                msgs.append( ("Category '{}': Combine points instead of percents is not supported \n " + \
+                        "when retake sub percent is set.").format(self.name))
         if self.combine_pts and self.gradeable_pcts:
-            msgs.append( "Category {}: Combine points instead of percents is not supported " + \
-                        "when Graded items weighted by score is set.".format(self.name))
+            msgs.append( ("Category '{}': Combine points instead of percents is not supported \n " + \
+                        "when Graded items weighted by score is set.").format(self.name))
         if self.drop_low_n and self.gradeable_pcts:
-            msgs.append( "Category {}: Dropping the lowest n items is not supported " + \
-                    "when Graded items weighted by score is set.".format(self.name))
+            msgs.append( ("Category '{}': Dropping the lowest n items is not supported \n " + \
+                    "when Graded items weighted by score is set.").format(self.name))
         if self.drop_low_n and self.combine_pts:
-            msgs.append( "Category {}: Dropping the lowest n items is not supported " + \
-                    "when Combine points instead of percents is set.".format(self.name))
+            msgs.append( ("Category '{}': Dropping the lowest n items is not supported \n " + \
+                    "when Combine points instead of percents is set.").format(self.name))
         if self.gradeable_pcts and self.est_ct != len(self.gradeable_pcts):
-            msgs.append( "Category {}: The number of Estimated items should match " + \
+            msgs.append( ("Category '{}': The number of Estimated items should match \n " + \
                     "the number of percentages when " + \
-                    "Graded items weighted by score is set.".format(self.name))
+                    "Graded items weighted by score is set.").format(self.name))
         return msgs
 
 class Gradeable:

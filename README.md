@@ -17,18 +17,19 @@ You can create a new course simply by running the application without specifying
 
 Gradebook
 
-1. Quit
+1. Save and Exit
 2. Save
-3. Enter Scores All Students
-4. Enter Scores One Student
-5. Reports
-6. Manage Graded Items
-7. Manage Categories
-8. Manage Students
-9. Manage Students (last, first)
-10. Import Students
-11. Export Students
-12. Edit Course
+3. Quit
+4. Enter Scores All Students
+5. Enter Scores One Student
+6. Reports
+7. Manage Graded Items
+8. Manage Categories
+9. Manage Students
+10. Manage Students (last, first)
+11. Import Students
+12. Export Students
+13. Edit Course
 
 ```>>>``` 
 
@@ -40,7 +41,8 @@ To set up your new course, first select 'Edit Course' to change the Course name 
 
 Next add your students, either by using 'Manage Students' to enter them manually (first name, last name, email) or by using 'Import Students' to import them from a tab-separated text file in the application directory named 'roster.txt'.  A sample file, 'roster.txt.sample', is provided in this repository.  Any existing students are deleted first, but the application will not allow you to import if there are any existing students with scores.
 
-In case your school is using the Banner system, there are Python scripts in the utils folder that will fetch your current roster from Banweb and create 'roster.txt' automatically for you.
+In case your school is using the Banner system, there are Python scripts in the utils/banner directoryr that will fetch your current roster from Banweb and create 'roster.txt' automatically for you.  Refer to the README.md file in that directory for more information.
+
 
 Students are always 'active' when added, but can be later inactivated or deleted, whether or not they have scores.  Inactive students don't show up on reports or when entering new scores.  You can associate notes with students.  If you want to retain the notes for a student who dropped the class, it makes sense to inactivate them.
 
@@ -50,7 +52,11 @@ Later, as students add or drop the class, it's simple to export the list of stud
 
 The next step in getting your class set up is to Manage Categories. A category could be 'Quiz' or 'Midterm 1', for example, each category counts collectively for a specific percent of the grade.  So if you said on the syllabus that 20% of the grade will based on quizzes and the midterm was worth 25%, you would set up these two categories accordingly.  If you want to automatically drop each student's lowest quiz grade, just enter 1 when prompted for 'drop lowest n' (this defaults to zero) when setting up the Quiz category.
 
-There option 'Combine Points' for categories is discussed in the next section. 
+It's possible to weight students' exams based on their scores, for example, we could define a Category 'Exams' with three graded items: 'Midterm 1', 'Midterm 2', and 'Final'.  We can set the overall weight of the 'Exams' category to 60%, then at the category level, we can set the percentages to: (15, 20, 25).  In this case the 'Exam' component of a student's grade would be calculated by multiplying their lowest (percent) score by 15, their higher score by 20 and their best score by 25, adding these and dividing by 60.
+
+The option 'Combine Points' for categories is discussed in the next section. 
+
+The logic around Categories and Graded Items is fairly complicated at this point.  Some combinations of settings are not supported.  A 'config_warnings.log' will be created in the Gradebook directory after the file is saved if any issues are detected.
 
 #### Graded Items
 
@@ -71,8 +77,7 @@ Once you've finished entering scores, you can go to Reports > Graded Item Report
 
 #### Importing Scores
 
-If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall Webassign total can be imported into an existing graded item with a single question representing the total possible points.
-
+If part of the students' grade is determined by scores that are reccorded in another system, such as Webassign, it may be useful to import those scores.  For example, the total scores for a single Webassign assignment or the overall Webassign total can be imported into an existing graded item with a single question representing the total possible points.  Refer to the README.md file in the utils/webassign directory for more information.
 The tab-separated scores file to be imported must be named online_scores.txt and located in the application folder, and must match the layout of the 'online_scores.txt.sample' file provided in this repository.  Often students may type their names differently when registering for the online course and use email addresses different from their university emails.  To get around this, you can create anoptional 'online_xref.txt' file with three columns.  The first two columns must be the student's first and last name as they have entered it in the online course (e.g. Webassign).  The last column must contain the student's email address as set up in the gradebook application.  
 
 See the documentation in the 'utils' folder for how to modify and use some useful scripts for exporting data from Webassign so it can be easily imported into Gradebook.

@@ -30,7 +30,7 @@ def log_config_warnings(gb):
 def course_to_dict(gb):
     course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, \
             'global_added_pct': gb.global_added_pct, 'letter_plus_minus_pct': gb.letter_plus_minus_pct, \
-            'gradeables':[], 'scores':[]}
+            'audible_warnings': gb.audible_warnings, 'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
             'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'combine_pts':c.combine_pts, \
             'gradeable_pcts': c.gradeable_pcts, 'obj': c} \
@@ -64,7 +64,8 @@ def course_from_dict(course_dict):
             for q in g['questions'] }
 
     course_obj = Course(course_dict['name'], course_dict['term'], \
-                        course_dict['global_added_pct'], course_dict['letter_plus_minus_pct'])
+                        course_dict['global_added_pct'], course_dict['letter_plus_minus_pct'], \
+                        course_dict['audible_warnings'])
     for cd in course_dict['categories']:
         category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], \
                 cd['est_ct'], cd['combine_pts'], cd['gradeable_pcts'])
@@ -121,4 +122,7 @@ def migration5(course_dict):
 
 def migration6(course_dict):
     for c in course_dict['categories']: c['gradeable_pcts'] = []
+
+def migration7(course_dict):
+    course_dict['audible_warnings'] = 1
 

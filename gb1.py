@@ -18,39 +18,41 @@ class CtrlCException(Exception):
 # Course Management
 #--------------------
 def edit_course(gb):
-    gb.name = ui.get_string("Enter Course Name", gb.name)
-    gb.term = ui.get_string("Enter Quarter", gb.term)
-    gb.global_added_pct = ui.get_valid_float("Global Added Pct.", 0, 100, gb.global_added_pct)
-    gb.letter_plus_minus_pct = ui.get_valid_float("Letter +/- Pct.", 0, 9, gb.letter_plus_minus_pct)
+    gb.name = ui.get_string(gb, "Enter Course Name", gb.name)
+    gb.term = ui.get_string(gb, "Enter Quarter", gb.term)
+    gb.global_added_pct = ui.get_valid_float(gb, "Global Added Pct.", 0, 100, gb.global_added_pct)
+    gb.letter_plus_minus_pct = ui.get_valid_float(gb, "Letter +/- Pct.", 0, 9, gb.letter_plus_minus_pct)
+    gb.audible_warnings = ui.get_bool(gb, "Audible Warnings?", gb.audible_warnings)
     menus.set_main_options(gb)
 
 #--------------------
 # Category Management
 #--------------------
 def add_category(gb):
-    name = ui.get_string("Enter Category Name")
-    pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100)
-    drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, 0)
-    est_ct = ui.get_valid_int("Estimated Items", 0, 100, 0)
-    combine_pts = ui.get_bool("Combine Points instead of Percents?", 0)
-    gradeable_pcts = ui.get_space_separated_floats("If weights for items in this category" \
-            " should based on best scores,"+ \
+    name = ui.get_string(gb, "Enter Category Name")
+    pct_of_grade = ui.get_valid_float(gb, "Percent of Grade", 0, 100)
+    drop_low_n = ui.get_valid_int(gb, "Drop Lowest n", 0, 3, 0)
+    est_ct = ui.get_valid_int(gb, "Estimated Items", 0, 100, 0)
+    combine_pts = ui.get_bool(gb, "Combine Points instead of Percents?", 0)
+    gradeable_pcts = ui.get_space_separated_floats(gb, "If weights for items in this category" \
+            " should based on student scores,\n"+ \
             " enter their percents separated by whitespace")
     cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct, combine_pts, gradeable_pcts)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
 def edit_category(gb):
-    name = ui.get_string("Enter Category Name", gb.cur_category.name)
+    name = ui.get_string(gb, "Enter Category Name", gb.cur_category.name)
     gb.cur_category.name = name or gb.cur_category.name
-    gb.cur_category.pct_of_grade = ui.get_valid_float("Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
-    gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
-    gb.cur_category.est_ct = ui.get_valid_int("Estimated Items", 0, 100, gb.cur_category.est_ct)
-    gb.cur_category.combine_pts = ui.get_bool("Combine Points instead of Percents?", gb.cur_category.combine_pts)
-    gb.cur_category.gradeable_pcts = ui.get_space_separated_floats( \
+    gb.cur_category.pct_of_grade = ui.get_valid_float(gb, "Percent of Grade", 0, 100, gb.cur_category.pct_of_grade)
+    gb.cur_category.drop_low_n = ui.get_valid_int(gb, "Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
+    gb.cur_category.est_ct = ui.get_valid_int(gb, "Estimated Items", 0, 100, gb.cur_category.est_ct)
+    gb.cur_category.combine_pts = ui.get_bool(gb, "Combine Points instead of Percents?", gb.cur_category.combine_pts)
+    pcts = ui.get_space_separated_floats(gb, \
             "If weights for items in this category should based on best scores,\n"+ \
             " enter their percents separated by whitespace",
-            gb.cur_category.gradeable_pcts)
+            gb.cur_category.gradeable_pcts, n_as_none=True)
+    gb.cur_category.set_gradeable_pcts(pcts)
     menus.set_category_options(gb)
 
 def delete_category(gb):
@@ -62,9 +64,9 @@ def delete_category(gb):
 # Student Management
 #-------------------
 def add_student(gb):
-    first = ui.get_string("Enter First Name")
-    last = ui.get_string("Enter Last Name")
-    email = ui.get_string("Enter Email")
+    first = ui.get_string(gb, "Enter First Name")
+    last = ui.get_string(gb, "Enter Last Name")
+    email = ui.get_string(gb, "Enter Email")
     gb.add_student(first, last, email)
     gb.students.sort(key=lambda s : s.name())
     gb.actives = None
@@ -72,10 +74,10 @@ def add_student(gb):
     menus.set_student_last_first_options(gb)
 
 def edit_student(gb):
-    first = ui.get_string("Enter First Name", gb.cur_student.first)
-    last = ui.get_string("Enter Last Name", gb.cur_student.last)
-    email = ui.get_string("Enter Email", gb.cur_student.email)
-    is_active = ui.get_bool("Is the Student Active? (y/n)", gb.cur_student.is_active)
+    first = ui.get_string(gb, "Enter First Name", gb.cur_student.first)
+    last = ui.get_string(gb, "Enter Last Name", gb.cur_student.last)
+    email = ui.get_string(gb, "Enter Email", gb.cur_student.email)
+    is_active = ui.get_bool(gb, "Is the Student Active? (y/n)", gb.cur_student.is_active)
     gb.cur_student.first = first
     gb.cur_student.last = last
     gb.cur_student.email = email
@@ -86,7 +88,7 @@ def edit_student(gb):
     menus.set_student_last_first_options(gb)
 
 def append_student_note(gb):
-    notes = ui.get_string("Append Notes", gb.cur_student.notes, is_append=True)
+    notes = ui.get_string(gb, "Append Notes", gb.cur_student.notes, is_append=True)
     if notes:
         if gb.cur_student.notes:
             gb.cur_student.notes += '  '
@@ -142,11 +144,11 @@ def add_gradeable(gb):
     if not gb.categories:
         ui.pause("Can't create a graded item until there is at least one category.")
         return
-    name = ui.get_string("Enter Graded Item Name")
-    cat = ui.get_int_from_list("Select a numbered category", [c.name for c in gb.categories])
+    name = ui.get_string(gb, "Enter Graded Item Name")
+    cat = ui.get_int_from_list(gb, "Select a numbered category", [c.name for c in gb.categories])
     category = gb.categories[cat-1]
-    fpts = ui.get_space_separated_floats("Enter question point values separated by whitespace")
-    total_pts = ui.get_valid_float("Total Points", sum(fpts)/2, sum(fpts), sum(fpts))
+    fpts = ui.get_space_separated_floats(gb, "Enter question point values separated by whitespace")
+    total_pts = ui.get_valid_float(gb, "Total Points", sum(fpts)/2, sum(fpts), sum(fpts))
     gradeable = Gradeable(gb, name, category, total_pts)
     questions = [Question(gradeable, p) for p in fpts]
     gradeable.questions = questions
@@ -155,23 +157,23 @@ def add_gradeable(gb):
 
 def edit_gradeable(gb):
     cg = gb.cur_gradeable
-    name = ui.get_string("Enter Graded Item Name", cg.name)
+    name = ui.get_string(gb, "Enter Graded Item Name", cg.name)
     def_sel = gb.categories.index(cg.category) + 1
-    cat = ui.get_int_from_list("Select a numbered category", [c.name for c in gb.categories], def_sel )
+    cat = ui.get_int_from_list(gb, "Select a numbered category", [c.name for c in gb.categories], def_sel )
     category = gb.categories[cat-1]
     pts = [q.points for q in cg.questions]
     prev_tot = sum(pts)
     bonus = prev_tot - cg.total_pts
     if not cg.has_scores():
-        fpts = ui.get_space_separated_floats("Enter question point values separated by whitespace", pts)
-        total_pts = ui.get_valid_float("Total Points", sum(fpts)/2.0, sum(fpts), \
+        fpts = ui.get_space_separated_floats(gb, "Enter question point values separated by whitespace", pts)
+        total_pts = ui.get_valid_float(gb, "Total Points", sum(fpts)/2.0, sum(fpts), \
             cg.total_pts if prev_tot == sum(fpts) else sum(fpts) - bonus)
     else:
         print("Question points: ", pts)
-        total_pts = ui.get_valid_float("Total Points", prev_tot/2, prev_tot, cg.total_pts)
-    sub_pct = ui.get_valid_float("Retake Sub-percent", 0, 100, cg.sub_pct)
-    added_pts = ui.get_valid_float("Added Points", 0, 10000, cg.added_pts)
-    added_pct = ui.get_valid_float("Added Percent", 0, 100, cg.added_pct)
+        total_pts = ui.get_valid_float(gb, "Total Points", prev_tot/2, prev_tot, cg.total_pts)
+    sub_pct = ui.get_valid_float(gb, "Retake Sub-percent", 0, 100, cg.sub_pct)
+    added_pts = ui.get_valid_float(gb, "Added Points", 0, 10000, cg.added_pts)
+    added_pct = ui.get_valid_float(gb, "Added Percent", 0, 100, cg.added_pct)
     cg.name = name or cg.name
     cg.category = category
     cg.total_pts = total_pts
@@ -264,10 +266,10 @@ def input_scores(gb, cg):
     s_ct, q_ct = len(ss), len(qs)
     done = False
     while not done:
-        s_idx, q_idx = handle_limits(s_idx, q_idx, s_ct, q_ct)
+        s_idx, q_idx = handle_limits(gb, s_idx, q_idx, s_ct, q_ct)
         s, q = ss[s_idx], qs[q_idx]
         score = gb.get_score(s, cg, q)
-        done, s_idx, q_idx = get_input(score, s, cg, q, s_idx, q_idx)
+        done, s_idx, q_idx = get_input(gb, score, s, cg, q, s_idx, q_idx)
     menus.set_reports_gradeable_sel_options(gb)
     menus.set_gradeable_options
 
@@ -278,19 +280,19 @@ def input_student_scores(gb, s):
     q_ct = len(qs)
     done = False
     while not done:
-        q_idx = handle_qlimit(q_idx, q_ct)
+        q_idx = handle_qlimit(gb, q_idx, q_ct)
         q = qs[q_idx]
         score = gb.get_score(s, cg, q)
-        done, q_idx = get_student_input(score, s, cg, q, q_idx)
+        done, q_idx = get_student_input(gb, score, s, cg, q, q_idx)
     menus.set_reports_gradeable_sel_options(gb)  
     menus.set_gradeable_options
 
-def handle_limits(s_idx, q_idx, s_ct, q_ct):
+def handle_limits(gb, s_idx, q_idx, s_ct, q_ct):
     if (s_idx <= 0 and q_idx < 0) or s_idx < 0:
-        ui.print_say("First One")
+        ui.print_say(gb, "First One")
         return 0, 0
     elif (s_idx >= s_ct - 1 and q_idx >= q_ct) or s_idx >= s_ct:
-        ui.print_say("Last One")
+        ui.print_say(gb, "Last One")
         return s_ct - 1, q_ct - 1
     elif q_idx >= q_ct:  
         return s_idx + 1, 0
@@ -299,17 +301,17 @@ def handle_limits(s_idx, q_idx, s_ct, q_ct):
     else: 
         return s_idx, q_idx
  
-def handle_qlimit(q_idx, q_ct):
+def handle_qlimit(gb, q_idx, q_ct):
     if q_idx < 0:
-        ui.print_say("First One")
+        ui.print_say(gb, "First One")
         return 0
     elif q_idx >= q_ct:
-        ui.print_say("Last One")
+        ui.print_say(gb, "Last One")
         return q_ct-1
     else:
         return q_idx
  
-def get_input(score, s, g, q, s_idx, q_idx):
+def get_input(gb, score, s, g, q, s_idx, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
         value = ui.dinput()
@@ -324,9 +326,9 @@ def get_input(score, s, g, q, s_idx, q_idx):
         elif value.upper() == 'P':
             return False, s_idx-1, 0
         else:
-            return False, s_idx, q_idx + try_set_score(score, q, value, q_idx)
+            return False, s_idx, q_idx + try_set_score(gb, score, q, value, q_idx)
         
-def get_student_input(score, s, g, q, q_idx):
+def get_student_input(gb, score, s, g, q, q_idx):
         print("{0:s}: {1:s}, {2:d}. ({3:.1f})" \
                 .format(g.name, s.name(), q_idx+1, score.value))
         value = ui.dinput()
@@ -337,19 +339,19 @@ def get_student_input(score, s, g, q, q_idx):
         elif value == '':
             return False, q_idx+1
         else:
-            return False, q_idx + try_set_score(score, q, value, q_idx)
+            return False, q_idx + try_set_score(gb, score, q, value, q_idx)
 
-def try_set_score(score, q, value, q_idx):
+def try_set_score(gb, score, q, value, q_idx):
     try:
         tval = float(value)
         if tval <= q.points and tval >= 0:
             score.value = tval
             return 1
         else:
-            ui.print_say("Invalid score")
+            ui.print_say(gb, "Invalid score")
             return 0
     except ValueError:
-        ui.print_say("What?")
+        ui.print_say(gb, "What?")
         return 0
 
 #--------
@@ -486,7 +488,9 @@ def rpt_avg_score_needed_for_grade(gb):
                 fval = float(resp)
                 score = gb.cur_student.avg_score_needed_for_grade(fval)
                 if score is None:
-                    print("Unable to compute average score needed.\nEstimated counts must be set for categories.")
+                    print("Unable to compute average score needed.\n" \
+                            "Either all scores have been entered or Estimated counts" \
+                            "haven't been set for all categories.")
                 else:
                     print("Average score needed is: {0:.1f}".format(score))
             except ValueError:
@@ -557,7 +561,7 @@ def save_current(gb):
     persist.log_config_warnings(gb)
 
 def quit(gb):
-    resp = ui.get_bool("Are you sure you want to Quit without saving?",0)    
+    resp = ui.get_bool(gb, "Are you sure you want to Quit without saving?",0)    
     if resp == 1: 
         persist.log_config_warnings(gb)
         menus.m_main.close()
@@ -589,6 +593,6 @@ if __name__ == "__main__":
             menus.m_main.open()
             exit(0)
         except CtrlCException as exp:
-            resp = ui.get_bool( \
+            resp = ui.get_bool(gb, \
                     'You pressed Ctrl+C.  Do you want to forcibly Quit?',0)
             if resp == 1: sys.exit(0)            

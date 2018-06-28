@@ -33,7 +33,10 @@ def add_category(gb):
     drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, 0)
     est_ct = ui.get_valid_int("Estimated Items", 0, 100, 0)
     combine_pts = ui.get_bool("Combine Points instead of Percents?", 0)
-    cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct, combine_pts)
+    gradeable_pcts = ui.get_space_separated_floats("If weights for items in this category" \
+            " should based on best scores,"+ \
+            " enter their percents separated by whitespace")
+    cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct, combine_pts, gradeable_pcts)
     gb.categories.append(cat)
     menus.set_category_options(gb)
 
@@ -44,6 +47,10 @@ def edit_category(gb):
     gb.cur_category.drop_low_n = ui.get_valid_int("Drop Lowest n", 0, 3, gb.cur_category.drop_low_n)
     gb.cur_category.est_ct = ui.get_valid_int("Estimated Items", 0, 100, gb.cur_category.est_ct)
     gb.cur_category.combine_pts = ui.get_bool("Combine Points instead of Percents?", gb.cur_category.combine_pts)
+    gb.cur_category.gradeable_pcts = ui.get_space_separated_floats( \
+            "If weights for items in this category should based on best scores,\n"+ \
+            " enter their percents separated by whitespace",
+            gb.cur_category.gradeable_pcts)
     menus.set_category_options(gb)
 
 def delete_category(gb):
@@ -542,14 +549,18 @@ def student_score_text(gb, student):
 
 def save_and_exit(gb):
     persist.save(gb, gb.file_name())
+    persist.log_config_warnings(gb)
     menus.m_main.close()
    
 def save_current(gb):
     persist.save(gb, gb.file_name())
+    persist.log_config_warnings(gb)
 
 def quit(gb):
     resp = ui.get_bool("Are you sure you want to Quit without saving?",0)    
-    if resp == 1: menus.m_main.close()
+    if resp == 1: 
+        persist.log_config_warnings(gb)
+        menus.m_main.close()
 
 def signal_handler(signal, frame):
     raise CtrlCException("You pressed Ctrl+C")

@@ -1,4 +1,6 @@
 import sys
+import pytest
+
 sys.path.append('../')
 from model import *
 
@@ -164,3 +166,47 @@ def test_rpt_avg_score_needed_for_grade3():
     expected = (90 - partial_est)*hope_factor
     assert abs(joe.avg_score_needed_for_grade(90) - (90 - partial_est)*hope_factor) < .00001
 
+def test_category_with_gradeable_pcts():
+    gb = Course('Math','Fall 2017')
+    cat = Category(gb, name='Exams', pct_of_grade=100, est_ct = 3, gradeable_pcts=[40,35,25])
+    gb.categories.append(cat)
+    exam1 = Gradeable(gb,name='Exam 1', category=cat, total_pts=50)  
+    exam1.add_question(50)
+    gb.gradeables.append(exam1)
+    exam2 = Gradeable(gb,name='Exam 2', category=cat, total_pts=50)  
+    exam2.add_question(50)
+    gb.gradeables.append(exam2)
+    exam3 = Gradeable(gb,name='Exam 3', category=cat, total_pts=50)  
+    exam3.add_question(50)
+    gb.gradeables.append(exam3)
+    joe = Student(gb,first='Joe',last='Crow',email='joe@pdx.edu')
+    gb.students.append(joe)
+    s = gb.get_score(joe, exam1, exam1.questions[0])
+    s.value = 45
+    gpcts = [g.adjusted_score(joe) * 100 / g.total_pts for g in cat.gradeables_with_scores()]
+    assert(sorted(gpcts) == [90])
+    assert(cat.gradeable_pcts[:1] == [25])
+    assert(cat.combined_pct(joe) == 90)
+    assert(joe.grade() == 90)
+    assert(gb.hope_factor() == 1.0/0.75)
+    assert(joe.avg_score_needed_for_grade(90) == 90)
+
+    s = gb.get_score(joe, exam2, exam2.questions[0])
+    s.value = 10
+    gpcts = [g.adjusted_score(joe) * 100 / g.total_pts for g in cat.gradeables_with_scores()]
+    assert(sorted(gpcts) == [20, 90])
+    assert(cat.gradeable_pcts[:2] == [25,35])
+    assert(cat.combined_pct(joe) == 3650/60)
+    assert(joe.grade() == 3650/60)
+    assert(gb.hope_factor() == 1.0/0.40)
+    assert(joe.avg_score_needed_for_grade(80) == pytest.approx(108.75))
+    
+    s = gb.get_score(joe, exam3, exam3.questions[0])
+    s.value = 40
+    gpcts = [g.adjusted_score(joe) * 100 / g.total_pts for g in cat.gradeables_with_scores()]
+    assert(sorted(gpcts) == [20,80,90])
+    assert(cat.gradeable_pcts == [25,35,40])
+    assert(cat.combined_pct(joe) == 69)
+    assert(joe.grade() == 69)
+    assert(gb.hope_factor() == None)
+    assert(joe.avg_score_needed_for_grade(80) == None)

@@ -1,6 +1,7 @@
 from model import *
 import json
 import ui_helper as ui
+import os
 
 def read(file_name):
     with open(file_name,'r') as f:
@@ -12,13 +13,27 @@ def save(gb, file_name):
     with open(file_name, mode='w', encoding='utf-8') as f:
         f.write(data)
 
+def log_config_warnings(gb):
+    filename = 'config_warnings.log'
+    warnings = '\n'.join(gb.config_warnings())
+    if warnings:
+        warnings += '\n'
+        try:
+            with open(filename,'w') as f:
+                f.write(warnings)
+        except: pass
+    else:
+        try: os.remove(filename)
+        except: pass
+
 # transfer all data in the course object hierarchy to a dictionary
 def course_to_dict(gb):
     course = {'name': gb.name, 'term': gb.term, 'schema_version': gb.schema_version, \
             'global_added_pct': gb.global_added_pct, 'letter_plus_minus_pct': gb.letter_plus_minus_pct, \
             'gradeables':[], 'scores':[]}
     course['categories'] = [{'id':i, 'name': c.name, 'pct_of_grade': c.pct_of_grade, \
-            'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'combine_pts':c.combine_pts, 'obj': c} \
+            'drop_low_n': c.drop_low_n, 'est_ct':c.est_ct, 'combine_pts':c.combine_pts, \
+            'gradeable_pcts': c.gradeable_pcts, 'obj': c} \
                 for i, c in enumerate(gb.categories)]
     course['students'] = [{'id':i, 'first': s.first, 'last': s.last, \
             'email': s.email, 'is_active': s.is_active,'notes': s.notes, 'obj': s} \
@@ -51,7 +66,8 @@ def course_from_dict(course_dict):
     course_obj = Course(course_dict['name'], course_dict['term'], \
                         course_dict['global_added_pct'], course_dict['letter_plus_minus_pct'])
     for cd in course_dict['categories']:
-        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], cd['est_ct'], cd['combine_pts'])
+        category = Category(course_obj, cd['name'], cd['pct_of_grade'], cd['drop_low_n'], \
+                cd['est_ct'], cd['combine_pts'], cd['gradeable_pcts'])
         category_dict[cd['id']]['obj'] = category
         course_obj.categories.append(category)
     for sd in course_dict['students']:
@@ -68,7 +84,6 @@ def course_from_dict(course_dict):
             question = Question(gradeable, qd['points'])
             question_dict[(qd['gid'],qd['id'])]['obj'] = question
             gradeable.questions.append(question)
-
     for sd in course_dict['scores']:
         student = student_dict[sd['sid']]['obj']
         gradeable = gradeable_dict[sd['gid']]['obj']
@@ -104,4 +119,6 @@ def migration4(course_dict):
 def migration5(course_dict):
     for c in course_dict['categories']: c['combine_pts'] = 0
 
+def migration6(course_dict):
+    for c in course_dict['categories']: c['gradeable_pcts'] = []
 

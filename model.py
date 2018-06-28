@@ -1,6 +1,6 @@
 import numpy as np
 
-schema_version = 5
+schema_version = 6
 
 class Course:
     def __init__(self, name = '', term = '', global_added_pct=0.0, letter_plus_minus_pct=1.0):
@@ -103,8 +103,7 @@ class Course:
                + self.term.replace(' ','_') + ".json"
 
     def hope_factor(self):
-        s = sum([(c.est_ct - c.actual_ct())/c.est_ct * c.pct_of_grade/100.0 \
-                    for c in self.categories if c.est_ct - c.actual_ct() > 0])
+        s = sum([c.hope_factor() for c in self.categories])
         return 1/s if s > 0 else None
 
     def grade_mins(self):
@@ -118,6 +117,14 @@ class Course:
             if pct >= mins[i]: 
                 return letters[i]
         return 'F'
+
+    def config_warnings(self):
+        msgs = []
+        if np.abs(sum([c.pct_of_grade for c in self.categories])-100.0) > 1.0e-6:
+            msgs.append("The percentage weights of the categories do not sum to 100%")
+        for c in self.categories:
+            msgs += c.config_warnings()
+        return msgs
 
 class Student:
     def __init__(self, course, first = '', last = '', email = '', \
@@ -156,11 +163,17 @@ class Student:
     def partial_est_grade(self):
         cats = self.course.categories_with_scores()
         if not cats: return None
-        pcts = np.array([c.combined_pct(self) for c in cats])
         weights = np.array([c.pct_of_grade for c in cats])
+        pcts = np.array([c.combined_pct(self) for c in cats])
         act_cts = np.array([c.actual_ct() for c in cats])
         est_cts = np.array([c.est_ct for c in cats])
-        return (pcts*weights/100.0*act_cts/est_cts).sum()
+        result = 0
+        for i in range(len(cats)):
+            if cats[i].gradeable_pcts:
+                result += pcts[i]*weights[i]/100.0*(1 - sum(cats[i].gradeable_pcts[act_cts[i]:])/100.0)
+            else:
+                result += pcts[i]*weights[i]/100.0*act_cts[i]/est_cts[i]
+        return result
 
     def avg_score_needed_for_grade(self, grade):
         hf = self.course.hope_factor()
@@ -173,7 +186,8 @@ class Question:
         self.points = points
 
 class Category:
-    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0, est_ct=0, combine_pts=0):
+    def __init__(self, course, name='', pct_of_grade=0.0, drop_low_n=0,\
+            est_ct=0, combine_pts=0, gradeable_pcts=[]):
         self.course = course
         self.name = name
         self.pct_of_grade = pct_of_grade
@@ -182,6 +196,8 @@ class Category:
         self.est_ct = est_ct 
         # combine gradeables by adding points instead of percents
         self.combine_pts = combine_pts 
+        # better scores get weighted more heavily.  These should sum to pct_of_grade
+        self.gradeable_pcts = sorted(gradeable_pcts)
 
     def actual_ct(self):
         gs = self.gradeables_with_scores()
@@ -190,8 +206,17 @@ class Category:
     def combined_pct(self, student):
         gs = self.gradeables_with_scores()
         if any(g for g in gs if g.sub_pct !=0):
+            # retake option
             return sum(g.adjusted_score(student) * 100 / g.total_pts * \
                     (g.sub_pct/100.0 if g.sub_pct != 0.0 else 1.0) for g in gs)
+        elif self.gradeable_pcts:
+            # better scores get weighted more heavily
+            # the user should set up all the gradeables in this category ahead of time
+            # combine pts is not supported in this case
+            # drop_low_n is not supported in this case
+            spcts = sum(self.gradeable_pcts[:len(gs)])
+            gpcts = [g.adjusted_score(student) * 100 / g.total_pts for g in gs]
+            return sum([gp*p/spcts for gp,p in zip(self.gradeable_pcts, sorted(gpcts))])
         else:
             if self.combine_pts:
                 # todo: figure out how to drop lowest in this case (maybe unnecessary)
@@ -208,6 +233,37 @@ class Category:
 
     def gradeables_with_scores(self):
         return [g for g in self.course.gradeables_with_scores() if g.category is self]
+
+    def hope_factor(self):
+        if self.gradeable_pcts:
+            return 0 if len(self.gradeable_pcts) <= self.actual_ct() \
+                    else sum(self.gradeable_pcts[self.actual_ct():]) /100.0 
+        return 0 if self.est_ct <= self.actual_ct() \
+                else (self.est_ct - self.actual_ct())/self.est_ct * self.pct_of_grade/100.0 
+
+    def config_warnings(self):
+        msgs = []
+        if any(g for g in self.course.gradeables if g.sub_pct !=0):
+            if self.gradeable_pcts:
+                msgs.append( "Category {}: Graded items weighted by score is not supported " + \
+                        "when retake sub percent is set.".format(self.name))
+            if self.combine_pts:
+                msgs.append( "Category {}: Combine points instead of percents is not supported " + \
+                        "when retake sub percent is set.".format(self.name))
+        if self.combine_pts and self.gradeable_pcts:
+            msgs.append( "Category {}: Combine points instead of percents is not supported " + \
+                        "when Graded items weighted by score is set.".format(self.name))
+        if self.drop_low_n and self.gradeable_pcts:
+            msgs.append( "Category {}: Dropping the lowest n items is not supported " + \
+                    "when Graded items weighted by score is set.".format(self.name))
+        if self.drop_low_n and self.combine_pts:
+            msgs.append( "Category {}: Dropping the lowest n items is not supported " + \
+                    "when Combine points instead of percents is set.".format(self.name))
+        if self.gradeable_pcts and self.est_ct != len(self.gradeable_pcts):
+            msgs.append( "Category {}: The number of Estimated items should match " + \
+                    "the number of percentages when " + \
+                    "Graded items weighted by score is set.".format(self.name))
+        return msgs
 
 class Gradeable:
     def __init__(self, course, name='', category = None, total_pts=0.0, \

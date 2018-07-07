@@ -108,7 +108,10 @@ def confirm(msg):
 # Give an audible warning
 def say(gb, phrase):
     if gb.audible_warnings:
-        subprocess.call(['spd-say', '-w', '"{}"'.format(phrase)])
+        try:
+            subprocess.call(['spd-say', '-w', '"{}"'.format(phrase)])
+        except Exception:
+            print("spd-say is probably unavailable")
 
 def print_say(gb, phrase):
     print(phrase)

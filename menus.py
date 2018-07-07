@@ -146,8 +146,10 @@ def set_gradeable_edit_del_options(gb):
 def set_score_all_options(gb):
     m_score_all.options=[]
     m_score_all.add_option("Return to Gradebook", m_score_all.close)
-    for item in sorted(gb.gradeables, key=lambda i: i.name):
-        m_score_all.add_option(item.name, lambda i=item: app.input_scores(gb,i))
+    if gb.get_actives():
+        for item in sorted(gb.gradeables, key=lambda i: i.name):
+            m_score_all.add_option(item.name, 
+                    lambda i=item: app.input_scores(gb,i))
 
 def set_score_one_options(gb):
     m_score_one.options=[]

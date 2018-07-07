@@ -1,4 +1,6 @@
 import subprocess
+import platform
+from os import system
 
 # --------------------------------------
 # User input and type conversion helpers
@@ -108,10 +110,17 @@ def confirm(msg):
 # Give an audible warning
 def say(gb, phrase):
     if gb.audible_warnings:
-        try:
-            subprocess.call(['spd-say', '-w', '"{}"'.format(phrase)])
-        except Exception:
-            print("spd-say is probably unavailable")
+        system = platform.system()
+        if system == 'Linux':
+            try:
+               subprocess.call(['spd-say', '-w', '"{}"'.format(phrase)])
+            except Exception:
+                print("spd-say is probably unavailable")
+        elif system == 'Darwin':
+            try:
+               system('say {}'.format(phrase))
+            except Exception:
+                print("say is probably unavailable")
 
 def print_say(gb, phrase):
     print(phrase)

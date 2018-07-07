@@ -3,6 +3,8 @@ import json
 import ui_helper as ui
 import os
 
+logfilename = 'warnings.log'
+
 def read(file_name):
     with open(file_name,'r') as f:
         course_dict = json.load(f)
@@ -14,17 +16,25 @@ def save(gb, file_name):
         f.write(data)
 
 def log_config_warnings(gb):
-    filename = 'config_warnings.log'
     warnings = '\n'.join(gb.config_warnings())
     if warnings:
         warnings += '\n'
         try:
-            with open(filename,'w') as f:
+            with open(logfilename,'a') as f:
                 f.write(warnings)
         except: pass
-    else:
-        try: os.remove(filename)
-        except: pass
+
+def log_message(message):
+    try:
+        with open(logfilename,'a') as f:
+            f.write(message + '\n')
+    except: pass
+
+def delete_log_file():
+    try:
+        os.remove(logfilename)
+    except OSError:
+        pass
 
 # transfer all data in the course object hierarchy to a dictionary
 def course_to_dict(gb):

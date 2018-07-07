@@ -23,6 +23,8 @@ def edit_course(gb):
     gb.global_added_pct = ui.get_valid_float(gb, "Global Added Pct.", 0, 100, gb.global_added_pct)
     gb.letter_plus_minus_pct = ui.get_valid_float(gb, "Letter +/- Pct.", 0, 9, gb.letter_plus_minus_pct)
     gb.audible_warnings = ui.get_bool(gb, "Audible Warnings?", gb.audible_warnings)
+    if gb.audible_warnings:
+        ui.say(gb, "Audible warnings are on")
     menus.set_main_options(gb)
 
 #--------------------
@@ -36,7 +38,8 @@ def add_category(gb):
     combine_pts = ui.get_bool(gb, "Combine Points instead of Percents?", 0)
     gradeable_pcts = ui.get_space_separated_floats(gb, "If weights for items in this category" \
             " should based on student scores,\n"+ \
-            " enter their percents separated by whitespace")
+            " enter their percents separated by whitespace. Enter 'N' to clear")
+   
     cat = Category(gb, name, pct_of_grade, drop_low_n, est_ct, combine_pts, gradeable_pcts)
     gb.categories.append(cat)
     menus.set_category_options(gb)
@@ -50,7 +53,7 @@ def edit_category(gb):
     gb.cur_category.combine_pts = ui.get_bool(gb, "Combine Points instead of Percents?", gb.cur_category.combine_pts)
     pcts = ui.get_space_separated_floats(gb, \
             "If weights for items in this category should based on best scores,\n"+ \
-            " enter their percents separated by whitespace",
+            " enter their percents separated by whitespace. Enter 'N' to clear.",
             gb.cur_category.gradeable_pcts, n_as_none=True)
     gb.cur_category.set_gradeable_pcts(pcts)
     menus.set_category_options(gb)
@@ -585,8 +588,8 @@ if __name__ == "__main__":
                   "Summer" if m >=5 and m < 8 else "Fall" 
         gb = Course('New Course', term + " " + \
                 str(today.year + (1 if term == "Winter" and m >= 11 else 0)))
-
     signal.signal(signal.SIGINT, signal_handler)
+    persist.delete_log_file()
     menus.initialize_menus(gb)
     while True:
         try:

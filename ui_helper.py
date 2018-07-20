@@ -118,7 +118,7 @@ def say(gb, phrase):
                 print("spd-say is probably unavailable")
         elif system == 'Darwin':
             try:
-               system('say {}'.format(phrase))
+                subprocess.call(['say', phrase])
             except Exception:
                 print("say is probably unavailable")
 

@@ -237,9 +237,6 @@ class Category:
                 else:
                     return sum(gpcts) / len(gpcts)
 
-    def gradeables_with_scores(self):
-        return [g for g in self.course.gradeables_with_scores() if g.category is self]
-
     def hope_factor(self):
         if self.gradeable_pcts:
             return 0 if len(self.gradeable_pcts) <= self.actual_ct() \
@@ -296,6 +293,9 @@ class Gradeable:
                 return q
         return None
 
+    def students_with_scores(self):
+        return list({student for (student, gradeable, _) in self.course.scores.keys() if gradeable is self})
+
     def adjusted_score(self, student):
         scoresum = sum([self.course.get_score(student, self, q).value for q in self.questions]) 
         return 0 if scoresum == 0 else scoresum + self.added_pts + self.added_pct*self.total_pts/100.0
@@ -309,6 +309,10 @@ class Gradeable:
     def delete_scores(self):
         for k in [k for k in self.course.scores.keys()]:
             if self is k[1]: self.course.scores.pop(k,None)
+
+    def mean_score(self):
+        students = self.students_with_scores()
+        return sum([self.adjusted_score(s) for s in students]) / len(students)
 
 class Score:
     def __init__(self, student, gradeable, question, value = 0.0):

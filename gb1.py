@@ -129,15 +129,15 @@ def import_students(gb):
     ui.pause()
 
 def export_students(gb):
-    try:
-        with open('students.txt','w') as f:
-            f.write("First Name\tLast Name\tEmail\tGrade\tLetter\tNotes\tActive?\tHas Scores\n")
-            f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}\t{}".format( \
-                s.first, s.last, s.email, ui.num_na_str(s.grade()), ui.na_str(s.letter_grade()), s.notes, \
-                "Y" if s.is_active else "N", \
-                "Y" if s.has_scores() else "N") for s in gb.students]))
-    except Exception as ex:
-        print(ex)
+#    try:
+    with open('students.txt','w') as f:
+        f.write("First Name\tLast Name\tEmail\tGrade\tLetter\tNotes\tActive?\tHas Scores\n")
+        f.write("\n".join(["{}\t{}\t{}\t{}\t{}\t{}\t{}".format( \
+            s.first, s.last, s.email, ui.num_na_str(s.grade()), ui.na_str(s.letter_grade()), s.notes, \
+            "Y" if s.is_active else "N", \
+            "Y" if s.has_scores() else "N") for s in gb.students]))
+#    except Exception as ex:
+#        print(ex)
     ui.pause()
 
 #---------------------

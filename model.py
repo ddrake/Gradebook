@@ -237,6 +237,10 @@ class Category:
                 else:
                     return sum(gpcts) / len(gpcts)
 
+    def gradeables_with_scores(self):
+        return [g for g in self.course.gradeables_with_scores() if g.category is self]
+
+
     def hope_factor(self):
         if self.gradeable_pcts:
             return 0 if len(self.gradeable_pcts) <= self.actual_ct() \
